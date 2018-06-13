@@ -7,28 +7,29 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+import com.hnac.camera.CameraFunction;
 import com.hnac.utils.HzNetUtil;
 
-public class WebViewPageActivity extends AppCompatActivity {
+public class WebViewTagFunctionActivity extends AppCompatActivity {
 
     private String  TAG = this.getClass().getName();
     private WebView mWebviewPage;
-    private String hzNetMobile = "http://192.168.65.100:8000/mobile/";
     private String localFile = "file:///android_asset/main.html";
     private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_web_view_page);
+        setContentView(R.layout.activity_web_view_tag_function);
 
-        mWebviewPage = findViewById(R.id.webview_page);
+        mWebviewPage = findViewById(R.id.webview_function_page);
         mProgressBar = findViewById(R.id.progressBar);
 
         WebSettings webSettings = mWebviewPage.getSettings();
@@ -75,9 +76,22 @@ public class WebViewPageActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(hzNetMobile);
-    }
+        mWebviewPage.loadUrl(localFile);
 
+        //注册JS调用的natvie接口
+        mWebviewPage.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void natvieTakePhoto() {
+                CameraFunction.takePhoto(WebViewTagFunctionActivity.this);
+            }
+
+            @JavascriptInterface
+            public void natvieRecordVideo() {
+                CameraFunction.recordVideo(WebViewTagFunctionActivity.this);
+            }
+
+        }, "functionTag");
+    }
 
     protected void onDestroy() {
         super.onDestroy();
