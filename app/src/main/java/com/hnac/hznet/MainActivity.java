@@ -11,6 +11,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //解决第一次安卓后，从系统安装中直接打开APP,进入应用后，按HOME键退出到后台，重新再次从桌面进入，应用重启问题
+        if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) != 0) {
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main);
 
         Button webviewPage = findViewById(R.id.webview_page_load);
