@@ -2,7 +2,6 @@ package com.hnac.hznet;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import com.hnac.utils.HzNetUtil;
 
@@ -20,6 +20,7 @@ public class WebViewPageActivity extends AppCompatActivity {
     private String  TAG = this.getClass().getName();
     private WebView mWebviewPage;
     private String hzNetMobile = "http://192.168.65.100:8000/mobile/";
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,8 @@ public class WebViewPageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web_view_page);
 
         mWebviewPage = findViewById(R.id.webview_page);
+        mProgressBar = findViewById(R.id.progressBar);
+
         WebSettings webSettings = mWebviewPage.getSettings();
         webSettings.setJavaScriptEnabled(true);
         //设置缓存模式，无网络时依然可以打开已经打开过的网页
@@ -55,6 +58,20 @@ public class WebViewPageActivity extends AppCompatActivity {
                 // Log.d(TAG,"=====onPageFinished title=" + title);
             }
 
+        });
+
+        //设置加载过程 进度条
+        mWebviewPage.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                mProgressBar.setProgress(newProgress);
+                if (newProgress ==  100) {
+                    mProgressBar.setVisibility(View.GONE);
+                } else {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                }
+                super.onProgressChanged(view, newProgress);
+            }
         });
 
         mWebviewPage.loadUrl(hzNetMobile);
