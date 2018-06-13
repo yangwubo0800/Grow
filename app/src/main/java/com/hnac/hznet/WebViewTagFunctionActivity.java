@@ -1,5 +1,6 @@
 package com.hnac.hznet;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
 import com.hnac.camera.CameraFunction;
+import com.hnac.camera.QRCodeScanActivity;
 import com.hnac.utils.HzNetUtil;
 
 public class WebViewTagFunctionActivity extends AppCompatActivity {
@@ -23,6 +25,8 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
     private WebView mWebviewPage;
     private String localFile = "file:///android_asset/main.html";
     private ProgressBar mProgressBar;
+
+    private final int SCAN_QRCODE_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +94,14 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
                 CameraFunction.recordVideo(WebViewTagFunctionActivity.this);
             }
 
+            @JavascriptInterface
+            public void scanQRCode() {
+                Intent it = new Intent();
+                it.setClass(WebViewTagFunctionActivity.this, QRCodeScanActivity.class);
+                startActivityForResult(it, SCAN_QRCODE_REQUEST);
+
+            }
+
         }, "functionTag");
     }
 
@@ -140,5 +152,23 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (null != intent) {
+            //扫码结果
+            String scanResult = intent.getStringExtra("result");
+            if (resultCode == RESULT_OK) {
+                switch (requestCode) {
+                    case SCAN_QRCODE_REQUEST:
+                        //返回给JS
+                        mWebviewPage.loadUrl("javascript:funFromjs('" + scanResult + "')");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 }

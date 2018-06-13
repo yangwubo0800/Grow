@@ -3,13 +3,22 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>主页</title>
+
+    <script type="text/javascript">
+	//提供给Android调用的方法
+    function funFromjs(result){
+        document.getElementById("scanResult").innerText= result;
+    }
+    </script>
 </head>
 
 <img src="image\logo.gif">
 <br/><br/><br/>
-&nbsp;<a href="BENET.html" style="color:#669; font: '微软简魏碑';">登录</a>&nbsp;|
 &nbsp;<input type="button" onclick="window.functionTag.natvieTakePhoto()" value="照相" />&nbsp;|
 &nbsp;<input type="button" onclick="window.functionTag.natvieRecordVideo()" value="录像" />&nbsp;|
+&nbsp;<input type="button" onclick="window.functionTag.scanQRCode()" value="扫码" />&nbsp;|
+<div id="tips" style="margin:10px;">扫码结果:</div>
+<div id="scanResult" style="margin:10px;"></div>
 <img src="image\email.gif">
 <br/><br/><br/><br/><br/><br/>
 <div class="text" style="text-align:center">

@@ -32,6 +32,10 @@
                   android:process=":WebviewFunction">
 
         </activity>
+
+        <activity android:name="com.hnac.camera.QRCodeScanActivity">
+
+        </activity>
     </application>
 
 </manifest>
