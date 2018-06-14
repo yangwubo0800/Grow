@@ -25,8 +25,9 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
     private WebView mWebviewPage;
     private String localFile = "file:///android_asset/main.html";
     private ProgressBar mProgressBar;
-
     private final int SCAN_QRCODE_REQUEST = 2;
+    //http, 萤石云开发测试地址
+    private String liveUrl = "http://hls.open.ys7.com/openlive/f01018a141094b7fa138b9d0b856507b.hd.m3u8";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,12 +86,12 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
         //注册JS调用的natvie接口
         mWebviewPage.addJavascriptInterface(new Object() {
             @JavascriptInterface
-            public void natvieTakePhoto() {
+            public void nativeTakePhoto() {
                 CameraFunction.takePhoto(WebViewTagFunctionActivity.this);
             }
 
             @JavascriptInterface
-            public void natvieRecordVideo() {
+            public void nativeRecordVideo() {
                 CameraFunction.recordVideo(WebViewTagFunctionActivity.this);
             }
 
@@ -100,6 +101,11 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
                 it.setClass(WebViewTagFunctionActivity.this, QRCodeScanActivity.class);
                 startActivityForResult(it, SCAN_QRCODE_REQUEST);
 
+            }
+
+            @JavascriptInterface
+            public void livePlay() {
+                VideoActivity.intentTo(WebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
             }
 
         }, "functionTag");

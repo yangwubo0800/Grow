@@ -36,6 +36,10 @@
         <activity android:name="com.hnac.camera.QRCodeScanActivity">
 
         </activity>
+        <activity android:name=".VideoActivity">
+
+        </activity>
+
     </application>
 
 </manifest>
