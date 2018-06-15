@@ -105,7 +105,7 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
 
             @JavascriptInterface
             public void livePlay() {
-                VideoActivity.intentTo(WebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
+                LivePlayActivity.intentTo(WebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
             }
 
         }, "functionTag");

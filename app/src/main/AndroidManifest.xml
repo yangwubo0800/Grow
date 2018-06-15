@@ -27,19 +27,13 @@
         </activity>
         <activity
             android:name=".WebViewPageActivity"
-            android:process=":WebviewPage"></activity>
-        <activity android:name=".WebViewTagFunctionActivity"
-                  android:process=":WebviewFunction">
-
-        </activity>
-
-        <activity android:name="com.hnac.camera.QRCodeScanActivity">
-
-        </activity>
-        <activity android:name=".VideoActivity">
-
-        </activity>
-
+            android:process=":WebviewPage" />
+        <activity
+            android:name=".WebViewTagFunctionActivity"
+            android:process=":WebviewFunction"></activity>
+        <activity android:name="com.hnac.camera.QRCodeScanActivity"></activity>
+        <activity android:name=".VideoActivity"></activity>
+        <activity android:name=".LivePlayActivity"></activity>
     </application>
 
 </manifest>
