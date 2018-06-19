@@ -28,6 +28,8 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
     private final int SCAN_QRCODE_REQUEST = 2;
     //http, 萤石云开发测试地址
     private String liveUrl = "http://hls.open.ys7.com/openlive/f01018a141094b7fa138b9d0b856507b.hd.m3u8";
+    //https
+    private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +109,20 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
             public void livePlay() {
                 LivePlayActivity.intentTo(WebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
             }
+
+            @JavascriptInterface
+            public void MediaPlayVideo() {
+                Intent it = new Intent();
+                it.setClass(WebViewTagFunctionActivity.this, VideoPlayActivity.class);
+                it.putExtra("videoUrl", videoUrl);
+                startActivity(it);
+            }
+
+            @JavascriptInterface
+            public void IjkPlayVideo() {
+                IjkVideoPlayActivity.intentTo(WebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
+            }
+
 
         }, "functionTag");
     }
