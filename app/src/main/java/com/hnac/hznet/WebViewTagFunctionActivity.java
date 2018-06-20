@@ -18,6 +18,7 @@ import android.widget.ProgressBar;
 import com.hnac.camera.CameraFunction;
 import com.hnac.camera.QRCodeScanActivity;
 import com.hnac.utils.HzNetUtil;
+import com.hnac.utils.NotificationUtils;
 
 public class WebViewTagFunctionActivity extends AppCompatActivity {
 
@@ -130,6 +131,16 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
             public void CleanWebCache() {
                 HzNetUtil.clearCacheFile(WebViewTagFunctionActivity.this);
             }
+
+            @JavascriptInterface
+            public void SendNotification() {
+                NotificationUtils.getInstance(WebViewTagFunctionActivity.this).setNotificationTitle("test_title");
+                NotificationUtils.getInstance(WebViewTagFunctionActivity.this).setNotificationContent("test_content");
+                NotificationUtils.getInstance(WebViewTagFunctionActivity.this).sendNotification(null, 1001);
+                //自定义通知
+                //NotificationUtils.getInstance(WebViewTagFunctionActivity.this).sendCustomNotification();
+            }
+
 
 
         }, "functionTag");
