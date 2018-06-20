@@ -21,6 +21,7 @@ public class WebViewPageActivity extends AppCompatActivity {
     private WebView mWebviewPage;
     private String hzNetMobile = "http://192.168.65.100:8000/mobile/";
     private String localFile = "file:///android_asset/main.html";
+    private String hzNet = "http://175.6.40.67:18894/hznet/index";
     private ProgressBar mProgressBar;
 
     @Override
@@ -75,7 +76,7 @@ public class WebViewPageActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(hzNetMobile);
+        mWebviewPage.loadUrl(hzNet);
     }
 
 

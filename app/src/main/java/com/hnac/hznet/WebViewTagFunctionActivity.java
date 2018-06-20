@@ -24,11 +24,14 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
     private String  TAG = this.getClass().getName();
     private WebView mWebviewPage;
     private String localFile = "file:///android_asset/main.html";
+    private String hzNetDebug = "http://175.6.40.67:18894/hznet/app/main.html";
     private ProgressBar mProgressBar;
     private final int SCAN_QRCODE_REQUEST = 2;
-    //http, 萤石云开发测试地址
+    //http, 萤石云开发测试地址，直播流
     private String liveUrl = "http://hls.open.ys7.com/openlive/f01018a141094b7fa138b9d0b856507b.hd.m3u8";
-    //https
+    //RTMP 格式安卓自带mediaPlayer 不支持，直播流
+    private String liveUrl2 = "rtmp://rtmp.open.ys7.com/openlive/0a2cff841ba243809a9a8611e29edc9b.hd";
+    //https，录制视频播放
     private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
 
     @Override
@@ -83,7 +86,7 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(localFile);
+        mWebviewPage.loadUrl(hzNetDebug);
 
         //注册JS调用的natvie接口
         mWebviewPage.addJavascriptInterface(new Object() {
@@ -121,6 +124,11 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
             @JavascriptInterface
             public void IjkPlayVideo() {
                 IjkVideoPlayActivity.intentTo(WebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
+            }
+
+            @JavascriptInterface
+            public void CleanWebCache() {
+                HzNetUtil.clearCacheFile(WebViewTagFunctionActivity.this);
             }
 
 
