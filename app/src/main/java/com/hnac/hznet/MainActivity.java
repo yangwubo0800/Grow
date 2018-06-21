@@ -24,6 +24,9 @@ public class MainActivity extends AppCompatActivity {
         Button webviewFunctionPage = findViewById(R.id.webview_tag_function);
         webviewFunctionPage.setOnClickListener(myListener);
 
+        Button nativeWebviewFunctionPage = findViewById(R.id.native_webview_tag_function);
+        nativeWebviewFunctionPage.setOnClickListener(myListener);
+
     }
 
 
@@ -37,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.webview_tag_function:
                     it.setClass(MainActivity.this, WebViewTagFunctionActivity.class);
+                    break;
+                case R.id.native_webview_tag_function:
+                    it.setClass(MainActivity.this, NativeWebViewTagFunctionActivity.class);
                     break;
                 default:
                     break;

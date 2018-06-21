@@ -98,7 +98,7 @@ public class NotificationUtils {
         //系统默认通知音
         Uri defaultRingtone = RingtoneManager.getActualDefaultRingtoneUri(mContext, RingtoneManager.TYPE_NOTIFICATION);
         //大图标
-        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.notification_test2);
+        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.notification);
 
         builder.setContentTitle(getNotificationTitle())
                 .setContentText(getNotificationContent())
