@@ -2,9 +2,12 @@ package com.hnac.camera;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -12,12 +15,14 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class CameraFunction {
 
-    private static final String TAG = CameraFunction.class.getClass().getName();
+    private static final String TAG = "CameraFunction";
     private Context mContext;
     private static String fileFullName;
+    private static String FILE_PROVIDER_AUTHORTIES = "com.hznet.fileprovider";
 
     /**
      * 根据时间生成图片或者视频名称
@@ -50,6 +55,7 @@ public class CameraFunction {
                 if (!file.exists()) {
                     file.mkdirs();
                 }
+                Log.d(TAG,"=====createMediaFile photo file.exists()="+file.exists());
 
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFileName = "PIC_" + timeStamp;
@@ -75,6 +81,8 @@ public class CameraFunction {
                 mediaFile = new File(fileFullName);
             }
 
+            Log.d(TAG,"=====createMediaFile fileFullName="+fileFullName);
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -87,13 +95,31 @@ public class CameraFunction {
      * 提供拍照功能
      * @param context
      */
-    public static  void takePhoto(Context context) {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_MEDIA_TITLE, "TakePhoto");
-        //初始化并调用摄像头
-        intent.putExtra(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createMediaFile("photo")));
-        context.startActivity(intent);
+    public static  Intent takePhoto(Context context) {
+        Log.d(TAG, "=====takePhoto");
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePhotoIntent.putExtra(MediaStore.EXTRA_MEDIA_TITLE, "TakePhoto");
+
+        if (takePhotoIntent.resolveActivity(context.getPackageManager()) != null) {
+            File newFile = createMediaFile("photo");
+            // TODO: Android7.0 upgrade
+            Uri contentUri = FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORTIES, newFile);
+            Log.i(TAG, "contentUri = " + contentUri.toString());
+            List<ResolveInfo> resInfoList= context.getPackageManager().queryIntentActivities(takePhotoIntent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                Log.i(TAG, "packageName = " + packageName);
+                context.grantUriPermission(packageName, contentUri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+            takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, contentUri);
+            takePhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+//            context.startActivity(takePhotoIntent);
+        }
+
+        return takePhotoIntent;
     }
 
 
@@ -101,20 +127,27 @@ public class CameraFunction {
      * 提供录制视频功能，配置限制录制时间为10s
      * @param context
      */
-    public static void recordVideo(Context context) {
-        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        //设置视频录制的最长时间
-        intent.putExtra (MediaStore.EXTRA_DURATION_LIMIT,10);
-        //设置视频录制的画质
-        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0.5);
-        // set the file save director
-        try {
-            Uri fileUri = Uri.fromFile(createMediaFile("video"));
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static Intent recordVideo(Context context) {
+        Log.d(TAG, "=====recordVideo");
+        Intent recordVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        recordVideoIntent.putExtra(MediaStore.EXTRA_MEDIA_TITLE, "TakePhoto");
+
+        if (recordVideoIntent.resolveActivity(context.getPackageManager()) != null) {
+            File newFile = createMediaFile("video");
+            // TODO: Android7.0 upgrade
+            Uri contentUri = FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORTIES, newFile);
+            Log.i(TAG, "contentUri = " + contentUri.toString());
+            List<ResolveInfo> resInfoList= context.getPackageManager().queryIntentActivities(recordVideoIntent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                context.grantUriPermission(packageName, contentUri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+            recordVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, contentUri);
+            //context.startActivity(recordVideoIntent);
         }
 
-        context.startActivity(intent);
+        return recordVideoIntent;
     }
 }

@@ -50,6 +50,7 @@ public class NotificationUtils {
         //创建notification
         // TODO: 考虑兼容低版本安卓，使用 NotificationCompat, 以及8.0之后的 channel概念
         if (Build.VERSION.SDK_INT >= 26) {
+            Log.d(TAG,"========NotificationUtils NotificationChannel");
             // 创建通知渠道
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL, NOTIFICATION_NAME,
                     NotificationManager.IMPORTANCE_HIGH);
@@ -59,6 +60,7 @@ public class NotificationUtils {
             // 创建该渠道下的builder对象
             mBuilder = new NotificationCompat.Builder(mContext, NOTIFICATION_CHANNEL);
         } else {
+            Log.d(TAG,"========NotificationUtils api < 26");
             mBuilder = new NotificationCompat.Builder(mContext);
         }
 
