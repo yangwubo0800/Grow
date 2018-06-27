@@ -43,7 +43,9 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
     //RTMP 格式安卓自带mediaPlayer 不支持，直播流
     private String liveUrl2 = "rtmp://rtmp.open.ys7.com/openlive/0a2cff841ba243809a9a8611e29edc9b.hd";
     //https，录制视频播放
-    private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
+    //private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
+    private String videoUrl = "http://175.6.40.67:18894/hznet/app/VID20170430200439.mp4";
+
     //手机本地视频
     private String localVideoUrl = "/sdcard/webview_video/VID_20180625_154855.mp4";
     private boolean mGotCameraPermission = false;

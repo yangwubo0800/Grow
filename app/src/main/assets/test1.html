@@ -1,8 +1,9 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>测试页面1</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+	<title>主页</title>
 
     <script type="text/javascript">
 	//提供给Android调用的方法
@@ -10,20 +11,40 @@
         document.getElementById("scanResult").innerText= result;
     }
     </script>
+    <style type="text/css">
+    	body{
+    		margin: 0;
+    		background-color: #fff;
+    	}
+    	header{
+    		background-color: #F7F7F7;
+    		font-size: 40px;
+    		color: #34C0F5;
+    		text-align: center;
+    		line-height: 100px
+    	}
+
+        footer{
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            color: #666;
+        }
+    </style>
 </head>
-
-
-<br/><br/><br/>
-<a href="main.html" target="_blank">跳转回主页</a>
-
-<br/><br/><br/><br/><br/><br/>
-<div class="text" style="text-align:center">
-
-HNAC公司 2018<br/>
-地址：湖南长沙<br/>
-电话：111111传真：11111<br/>
-copyringht&copy;2018&nbsp;bennet&nbsp;right&nbsp;reserve
-</div>
-
-</body>
+<body>
+	<header>HzNet APP</header>
+	<section style="text-align: center;margin-top: 40px;">
+		<a href="./main.html">返回主页</a>
+    </section>
+    <footer>
+        <div>HNAC公司 2018 </div>
+        <div>地址：湖南长沙 </div>
+        <div>服务热线：400－0586－896</div>
+        <div>业务专线：0731-88238888 转 8403</div>
+        <div>copyringht&copy;2018&nbsp;bennet&nbsp;right&nbsp;reserve</div>
+    </footer>
+<body>
 </html>

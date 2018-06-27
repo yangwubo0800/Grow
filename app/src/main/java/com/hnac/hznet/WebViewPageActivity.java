@@ -27,7 +27,8 @@ public class WebViewPageActivity extends AppCompatActivity {
 
     private String  TAG = this.getClass().getName();
     private WebView mWebviewPage;
-    private String hzNetMobile = "http://192.168.65.100:8000/mobile/";
+    //private String hzNetMobile = "http://192.168.65.100:8000/mobile/";
+    private String hzNetMobile = "http://175.6.40.67:18894/hznet/app/mobile/index.html";
     private String localFile = "file:///android_asset/main.html";
     private String hzNet = "http://175.6.40.67:18894/hznet/index";
     private String hzInfo = "http://175.6.40.68/index";
@@ -104,10 +105,11 @@ public class WebViewPageActivity extends AppCompatActivity {
                 }
                 //errorCode=-2 Description=net::ERR_INTERNET_DISCONNECTED 网络没连接
                 //errorCode=-6 Description=net::ERR_CONNECTION_REFUSED    服务器文件不存在
+                //errorCode=-8 Description=net::ERR_CONNECTION_TIMED_OUT
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                     if (null != error) {
                         int errCode = error.getErrorCode();
-                        if ((errCode == -2) || (errCode == -6)) {
+                        if ((errCode == -2) || (errCode == -6) || (errCode == -8)) {
                             mIsLoadSuccess = false;
                             Toast.makeText(WebViewPageActivity.this, "加载失败", Toast.LENGTH_LONG).show();
                             view.setVisibility(View.GONE);
@@ -133,7 +135,7 @@ public class WebViewPageActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(hzNet);
+        mWebviewPage.loadUrl(hzNetMobile);
     }
 
 

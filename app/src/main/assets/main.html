@@ -1,17 +1,113 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>主页</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+	<title>主页</title>
 
     <script type="text/javascript">
 	//提供给Android调用的方法
     function funFromjs(result){
-        document.getElementById("scanResult").innerText= result;
+        document.getElementById("scanResult").innerText= "扫码结果：" + result;
     }
     </script>
-</head>
+    <style type="text/css">
+    	body{
+            margin: 0;
+    		background-color: #fff;
+    	}
+    	header{
+    		background-color: #F7F7F7;
+    		font-size: 40px;
+    		color: #34C0F5;
+    		text-align: center;
+    		line-height: 100px
+    	}
 
+    	.row{
+    		display: flex;
+    		align-items: center;
+    		justify-content: center;
+    	}
+    	.row >div{
+    		flex: 1;
+            padding: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+    	}
+        .row >div:active{
+            background: #e4e4e4;
+        }
+
+        .row img{
+            margin-bottom: 5px;
+        }
+        footer{
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+	<header>HzNet APP</header>
+	<section class="row">
+		<div onclick="window.functionTag.nativeTakePhoto()">
+			<img src="./images/photo.png">
+            <label>照相</label>
+		</div>
+        <div onclick="window.functionTag.nativeRecordVideo()">
+            <img src="./images/video.png">
+            <label>录像</label>
+        </div>
+        <div onclick="window.functionTag.scanQRCode()">
+            <img src="./images/qr.png">
+            <label>扫码</label>
+        </div>
+	</section>
+    <section class="row">
+        <div onclick="window.functionTag.livePlay()">
+            <img src="./images/live.png">
+            <label>直播</label>
+        </div>
+        <div onclick="window.functionTag.MediaPlayVideo()">
+            <img src="./images/player1.png">
+            <label>MediaPlayer</label>
+        </div>
+        <div onclick="window.functionTag.IjkPlayVideo()">
+            <img src="./images/player1.png">
+            <label>ljkPlayer</label>
+        </div>
+    </section>
+    <section class="row">
+        <div onclick="window.functionTag.CleanWebCache()">
+            <img src="./images/clearup.png">
+            <label>清理缓存</label>
+        </div>
+        <div onclick="window.functionTag.SendNotification()">
+            <img src="./images/send.png">
+            <label>发送通知</label>
+        </div>
+        <div onclick="window.location.href='./test1.html'">
+            <img src="./images/skip.png">
+            <label>跳转测试</label>
+        </div>
+    </section>
+    <footer>
+        <div id="scanResult" style="margin:10px;"></div>
+        <br/><br/>
+        <div>HNAC公司 2018 </div>
+        <div>地址：湖南长沙 </div>
+        <div>服务热线：400－0586－896</div>
+        <div>业务专线：0731-88238888 转 8403</div>
+        <div>copyringht&copy;2018&nbsp;bennet&nbsp;right&nbsp;reserve</div>
+    </footer>
+<!-- 
 
 <br/><br/><br/>
 &nbsp;<input type="button" onclick="window.functionTag.nativeTakePhoto()" value="照相" />&nbsp;|
@@ -23,7 +119,6 @@
 &nbsp;<input type="button" onclick="window.functionTag.MediaPlayVideo()" value="网络视频播放(MediaPlayer)" />&nbsp;|
 <br/><br/>
 &nbsp;<input type="button" onclick="window.functionTag.IjkPlayVideo()" value="网络视频播放(IjkPlayer)" />&nbsp;|
-&nbsp;<input type="button" onclick="window.functionTag.IjkPlayLocalVideo()" value="本地视频播放" />&nbsp;|
 <br/><br/>
 &nbsp;<a href="test1.html" >跳转测试页面1</a>
 <br/><br/>
@@ -38,6 +133,6 @@ HNAC公司 2018<br/>
 电话：111111传真：11111<br/>
 copyringht&copy;2018&nbsp;bennet&nbsp;right&nbsp;reserve
 </div>
-
+ -->
 </body>
 </html>
