@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.hnac.camera.CameraFunction;
-import com.hnac.camera.QRCodeScanActivity;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
 
@@ -47,6 +46,8 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
     //https，录制视频播放
     //private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
     private String videoUrl = "http://175.6.40.67:18894/hznet/app/VID20170430200439.mp4";
+    //debugUrl
+    private String debugUrl = "http://192.168.65.96:8080/HZInfo/app/view/test.html";
 
 
 
@@ -156,14 +157,14 @@ public class WebViewTagFunctionActivity extends AppCompatActivity {
                             new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
                     if (mGotCameraPermission) {
                         Intent it = new Intent();
-                        it.setClass(WebViewTagFunctionActivity.this, QRCodeScanActivity.class);
+                        it.setClass(WebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
                         startActivityForResult(it, SCAN_QRCODE_REQUEST);
                     }
                 } else {
                     //已经获得权限，直接开启扫码
                     Log.d(TAG,"=====already has permission");
                     Intent it = new Intent();
-                    it.setClass(WebViewTagFunctionActivity.this, QRCodeScanActivity.class);
+                    it.setClass(WebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
                     startActivityForResult(it, SCAN_QRCODE_REQUEST);
                 }
             }

@@ -28,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
         Button nativeWebviewFunctionPage = findViewById(R.id.native_webview_tag_function);
         nativeWebviewFunctionPage.setOnClickListener(myListener);
 
+        Button moduleLib = findViewById(R.id.module_lib);
+        moduleLib.setOnClickListener(myListener);
+
     }
 
 

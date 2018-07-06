@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.hnac.camera.CameraFunction;
-import com.hnac.camera.QRCodeScanActivity;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
 
@@ -157,14 +156,14 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                             new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
                     if (mGotCameraPermission) {
                         Intent it = new Intent();
-                        it.setClass(NativeWebViewTagFunctionActivity.this, QRCodeScanActivity.class);
+                        it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
                         startActivityForResult(it, SCAN_QRCODE_REQUEST);
                     }
                 } else {
                     //已经获得权限，直接开启扫码
                     Log.d(TAG,"=====already has permission");
                     Intent it = new Intent();
-                    it.setClass(NativeWebViewTagFunctionActivity.this, QRCodeScanActivity.class);
+                    it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
                     startActivityForResult(it, SCAN_QRCODE_REQUEST);
                 }
             }
