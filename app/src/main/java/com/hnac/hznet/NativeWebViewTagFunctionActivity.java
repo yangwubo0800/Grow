@@ -7,6 +7,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -23,11 +24,12 @@ import android.widget.Toast;
 import com.hnac.camera.CameraFunction;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
+import com.hnac.utils.ToastUtil;
 import com.hnac.zxing.CaptureActivity;
 
 public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
-    private String  TAG = this.getClass().getName();
+    private String  TAG = "NativeWebViewTagFunctionActivity";
     private WebView mWebviewPage;
     private String localFile = "file:///android_asset/main.html";
     private ProgressBar mProgressBar;
@@ -108,6 +110,12 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
         //注册JS调用的natvie接口
         mWebviewPage.addJavascriptInterface(new Object() {
+
+            /**
+             * 功能：供JS使用，提供拍照功能，生成照片路径无法直接返回，需要等相机界面返回
+             * 参数：无
+             * 返回值：无
+             */
             @JavascriptInterface
             public void nativeTakePhoto() {
                 Log.d(TAG,"======nativeTakePhoto");
@@ -128,6 +136,11 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                 startActivityForResult(it, TAKE_PHOTO_REQUEST);
             }
 
+            /**
+             * 功能：供JS使用，提供录像功能，生成录像路径无法直接返回，需要等相机界面返回
+             * 参数：无
+             * 返回值：无
+             */
             @JavascriptInterface
             public void nativeRecordVideo() {
                 Log.d(TAG,"======nativeRecordVideo");
@@ -147,6 +160,11 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                 startActivityForResult(it, RECORD_VIDEO_REQUEST);
             }
 
+            /**
+             * 功能：供JS使用，提供扫码功能，生成扫码信息无法直接返回，需要等相机界面返回
+             * 参数：无
+             * 返回值：无
+             */
             @JavascriptInterface
             public void scanQRCode() {
                 if (ContextCompat.checkSelfPermission(NativeWebViewTagFunctionActivity.this,
@@ -175,12 +193,25 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                 com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
             }
 
+            /**
+             * 由JS传入直播地址和标题
+             * @param liveUrl
+             * @param liveTitle
+             */
+            @JavascriptInterface
+            public void livePlay(String liveUrl, String liveTitle) {
+                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, liveTitle);
+            }
+
             @JavascriptInterface
             public void MediaPlayVideo() {
-                Intent it = new Intent();
-                it.setClass(NativeWebViewTagFunctionActivity.this, VideoPlayActivity.class);
-                it.putExtra("videoUrl", videoUrl);
-                startActivity(it);
+//                Intent it = new Intent();
+//                it.setClass(NativeWebViewTagFunctionActivity.this, VideoPlayActivity.class);
+//                it.putExtra("videoUrl", videoUrl);
+//                startActivity(it);
+//                Toast.makeText(NativeWebViewTagFunctionActivity.this, "本地mediaPlayer弃用",
+//                        Toast.LENGTH_SHORT).show();
+                ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "本地mediaPlayer已经弃用");
             }
 
             @JavascriptInterface
@@ -188,11 +219,27 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                 com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
             }
 
+            /**
+             * 由JS 传入视频地址和标题
+             * @param videoUrl
+             * @param videoTitle
+             */
+            @JavascriptInterface
+            public void IjkPlayVideo(String videoUrl, String videoTitle) {
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, videoTitle);
+            }
+
+
             @JavascriptInterface
             public void IjkPlayLocalVideo() {
                 com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, localVideoUrl, "LocalVideoTitle");
             }
 
+            /**
+             * 功能：提供清理缓存功能
+             * 参数：无
+             * 返回值：无
+             */
             @JavascriptInterface
             public void CleanWebCache() {
                 HzNetUtil.clearCacheFile(NativeWebViewTagFunctionActivity.this);
@@ -261,31 +308,55 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * 处理启动本地其他activity功能返回值处理
+     * @param requestCode
+     * @param resultCode
+     * @param intent
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.d(TAG,"=====onActivityResult requestCode="+requestCode
         +" resultCode="+resultCode + " intent="+intent);
+        String scanResult = null;
         if (null != intent) {
             //扫码结果
-            String scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
-            if (resultCode == RESULT_OK) {
-                switch (requestCode) {
-                    case SCAN_QRCODE_REQUEST:
-                        //返回给JS
-                        mWebviewPage.loadUrl("javascript:funFromjs('" + scanResult + "')");
-                        break;
-                    case TAKE_PHOTO_REQUEST:
-                        Log.d(TAG,"=======onActivityResult TAKE_PHOTO_REQUEST intent="+intent.toString());
-                        break;
-                    case RECORD_VIDEO_REQUEST:
-                        Log.d(TAG,"=======onActivityResult RECORD_VIDEO_REQUEST intent="+intent.toString());
-                        break;
-                    default:
-                        break;
-                }
+            scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
+        }
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case SCAN_QRCODE_REQUEST:
+                    //返回给JS
+                    mWebviewPage.loadUrl("javascript:funFromjs('" + scanResult + "')");
+                    ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "扫码结果：" + scanResult);
+                    break;
+                case TAKE_PHOTO_REQUEST:
+                    Log.d(TAG,"=======onActivityResult TAKE_PHOTO_REQUEST ");
+                    if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "拍照失败了");
+                    } else {
+                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "照片生成路径：" + CameraFunction.fileFullName);
+                    }
+                    break;
+                case RECORD_VIDEO_REQUEST:
+                    Log.d(TAG,"=======onActivityResult RECORD_VIDEO_REQUEST");
+                    if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "录像失败了");
+                    } else {
+                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "录像生成路径：" + CameraFunction.fileFullName);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }
 
+    /**
+     * 权限请求结果处理
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults );

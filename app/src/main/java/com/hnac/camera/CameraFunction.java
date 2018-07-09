@@ -21,8 +21,11 @@ public class CameraFunction {
 
     private static final String TAG = "CameraFunction";
     private Context mContext;
-    private static String fileFullName;
+    //生成文件路径，全局变量，供外面使用
+    public static String fileFullName;
     private static String FILE_PROVIDER_AUTHORTIES = "com.hznet.fileprovider";
+    private static String PHOTO_PATH = "/hznet/photo/";
+    private static String VIDEO_PATH = "/hznet/video/";
 
     /**
      * 根据时间生成图片或者视频名称
@@ -50,7 +53,7 @@ public class CameraFunction {
 
         try {
             if (type.equals("photo")) {
-                String targetDir = sdDir + "/" + "webview_photo";
+                String targetDir = sdDir + PHOTO_PATH;
                 File file = new File(targetDir);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -60,9 +63,9 @@ public class CameraFunction {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFileName = "PIC_" + timeStamp;
                 String suffix = ".jpeg";
-                fileFullName = targetDir + "/" + imageFileName + suffix;
+                fileFullName = targetDir  + imageFileName + suffix;
             } else if (type.equals("video")) {
-                String targetDir = sdDir + "/" + "webview_video";
+                String targetDir = sdDir + VIDEO_PATH;
                 File file = new File(targetDir);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -71,7 +74,7 @@ public class CameraFunction {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String FileName = "VID_" + timeStamp;
                 String suffix = ".mp4";
-                fileFullName = targetDir + "/" + FileName + suffix;
+                fileFullName = targetDir + FileName + suffix;
             } else {
                 fileFullName = null;
             }
@@ -124,7 +127,7 @@ public class CameraFunction {
 
 
     /**
-     * 提供录制视频功能，配置限制录制时间为10s
+     * 提供录制视频功能
      * @param context
      */
     public static Intent recordVideo(Context context) {

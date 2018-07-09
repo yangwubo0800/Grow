@@ -19,11 +19,11 @@ public class MainActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_main);
 
-        Button webviewPage = findViewById(R.id.webview_page_load);
-        webviewPage.setOnClickListener(myListener);
-
-        Button webviewFunctionPage = findViewById(R.id.webview_tag_function);
-        webviewFunctionPage.setOnClickListener(myListener);
+//        Button webviewPage = findViewById(R.id.webview_page_load);
+//        webviewPage.setOnClickListener(myListener);
+//
+//        Button webviewFunctionPage = findViewById(R.id.webview_tag_function);
+//        webviewFunctionPage.setOnClickListener(myListener);
 
         Button nativeWebviewFunctionPage = findViewById(R.id.native_webview_tag_function);
         nativeWebviewFunctionPage.setOnClickListener(myListener);
@@ -38,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
             Intent it = new Intent();
             Log.d(TAG,"=====myListener onclick");
             switch (view.getId()) {
-                case R.id.webview_page_load:
-                    it.setClass(MainActivity.this, WebViewPageActivity.class);
-                    break;
+//                case R.id.webview_page_load:
+//                    it.setClass(MainActivity.this, WebViewPageActivity.class);
+//                    break;
 //                case R.id.webview_tag_function:
 //                    it.setClass(MainActivity.this, WebViewTagFunctionActivity.class);
 //                    break;
