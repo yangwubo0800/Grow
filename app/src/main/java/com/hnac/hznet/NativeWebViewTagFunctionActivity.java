@@ -1,10 +1,13 @@
 package com.hnac.hznet;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,10 +18,15 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.hnac.camera.CameraFunction;
@@ -31,6 +39,7 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
     private String  TAG = "NativeWebViewTagFunctionActivity";
     private WebView mWebviewPage;
+    private View mErrorView;
     private String localFile = "file:///android_asset/main.html";
     private ProgressBar mProgressBar;
     private final int SCAN_QRCODE_REQUEST = 2;
@@ -51,6 +60,7 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
     //手机本地视频
     private String localVideoUrl = "/sdcard/webview_video/VID_20180625_154855.mp4";
     private boolean mGotCameraPermission = false;
+    private String debug = "http://www.baidu.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +100,36 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                 // Log.d(TAG,"=====onPageFinished title=" + title);
             }
 
+            // 旧版本，会在新版本中也可能被调用，所以加上一个判断，防止重复显示
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                    return;
+                }
+                super.onReceivedError(view, errorCode, description, failingUrl);
+                Log.e(TAG," onReceivedError description=" + description);
+                // 在这里显示自定义错误页
+                showErrorPage();//显示错误页面
+            }
+
+
+            @TargetApi(Build.VERSION_CODES.M)
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                if (null != error) {
+                    CharSequence errDes = error.getDescription();
+                    Log.e(TAG," onReceivedError errDes=" + errDes);
+                }
+                showErrorPage();//显示错误页面
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                super.onReceivedHttpError(view, request, errorResponse);
+                Log.e(TAG," onReceivedHttpError ");
+                showErrorPage();//显示错误页面
+            }
         });
 
         //设置加载过程 进度条
@@ -106,7 +146,7 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(localFile);
+        mWebviewPage.loadUrl(debug);
 
         //注册JS调用的natvie接口
         mWebviewPage.addJavascriptInterface(new Object() {
@@ -397,6 +437,48 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
             }
             Log.d(TAG,"======getPermission requestPermissions");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+
+    protected void showErrorPage() {
+        LinearLayout webParentView = (LinearLayout)mWebviewPage.getParent();
+        initErrorPage();//初始化自定义页面
+        while (webParentView.getChildCount() > 1) {
+            webParentView.removeViewAt(0);
+        }
+        @SuppressWarnings("deprecation")
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewPager.LayoutParams.FILL_PARENT, ViewPager.LayoutParams.FILL_PARENT);
+        webParentView.addView(mErrorView, 0, lp);
+    }
+    /****
+     * 把系统自身请求失败时的网页隐藏
+     */
+    protected void hideErrorPage() {
+        LinearLayout webParentView = (LinearLayout)mWebviewPage.getParent();
+        while (webParentView.getChildCount() > 1) {
+            webParentView.removeViewAt(0);
+        }
+    }
+    /***
+     * 显示加载失败时自定义的网页
+     */
+    protected void initErrorPage() {
+        if (mErrorView == null) {
+            mErrorView = View.inflate(this, R.layout.activity_error, null);
+            RelativeLayout layout = (RelativeLayout)mErrorView.findViewById(R.id.online_error_btn_retry);
+            // TODO: 众多页面在一个webview里面跑，需要管理 url 才知道加载哪个，所以不做重新加载。
+//            layout.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+////                    hideErrorPage();
+////                    mWebviewPage.loadUrl("about:blank");
+//                    hideErrorPage();
+//                    mWebviewPage.loadUrl(localFile);
+//
+//                }
+//            });
+            mErrorView.setOnClickListener(null);
         }
     }
 
