@@ -1,4 +1,4 @@
-package com.hnac.hznet;
+package com.hnac.ijkplayer.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,13 +13,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.hnac.ijkplayer.IjkVideoView;
+import com.hnac.ijkplayer.R;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
@@ -57,7 +57,7 @@ public class IjkVideoPlayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ijk_video_play);
+        setContentView(R.layout.ijkplayer_hnac_activity_ijk_video_play);
         Log.d(TAG,"=====onCreate");
 
         LinearLayout backIcon = findViewById(R.id.video_play_back);
@@ -201,7 +201,7 @@ public class IjkVideoPlayActivity extends AppCompatActivity {
                 mSeekBar.setSecondaryProgress(0);
                 mSeekBar.setEnabled(false);
                 //点击可以重新播放
-                mPlayPauseButton.setImageResource(R.drawable.stop);
+                mPlayPauseButton.setImageResource(R.drawable.ijkplayer_hnac_stop);
                 mHandler.post(updateThread);
             }
         });
@@ -211,10 +211,10 @@ public class IjkVideoPlayActivity extends AppCompatActivity {
     private void playerProcess() {
         if (mVideoView.isPlaying()) {
             mVideoView.pause();
-            mPlayPauseButton.setImageResource(R.drawable.stop);
+            mPlayPauseButton.setImageResource(R.drawable.ijkplayer_hnac_stop);
         } else {
             mVideoView.start();
-            mPlayPauseButton.setImageResource(R.drawable.play);
+            mPlayPauseButton.setImageResource(R.drawable.ijkplayer_hnac_play);
         }
     }
 

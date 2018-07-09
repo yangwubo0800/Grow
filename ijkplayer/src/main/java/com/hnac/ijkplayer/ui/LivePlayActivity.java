@@ -1,4 +1,4 @@
-package com.hnac.hznet;
+package com.hnac.ijkplayer.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.hnac.ijkplayer.IjkVideoView;
+import com.hnac.ijkplayer.R;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
@@ -32,6 +33,16 @@ public class LivePlayActivity extends AppCompatActivity {
     private LinearLayout mTitleInfo;
 
 
+    /**
+     * 提供给外部接口调用启动直播界面，传入直播源
+     * @param context
+     * @param videoPath
+     * @param videoTitle
+     */
+    public static void intentTo(Context context, String videoPath, String videoTitle) {
+        context.startActivity(newIntent(context, videoPath, videoTitle));
+    }
+
     public static Intent newIntent(Context context, String videoPath, String videoTitle) {
         Intent intent = new Intent(context, LivePlayActivity.class);
         intent.putExtra("videoPath", videoPath);
@@ -39,14 +50,11 @@ public class LivePlayActivity extends AppCompatActivity {
         return intent;
     }
 
-    public static void intentTo(Context context, String videoPath, String videoTitle) {
-        context.startActivity(newIntent(context, videoPath, videoTitle));
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG,"=====com.hnac.ijkplayer.ui onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_live_play);
+        setContentView(R.layout.ijkplayer_hnac_activity_live_play);
         mLivePlayLayouProgress = findViewById(R.id.liveplay_layoutprogress);
         mVideoInfo = (SurfaceView)findViewById(R.id.videoinfo_surface);
         mTitleInfo = findViewById(R.id.ll_title);
@@ -128,7 +136,9 @@ public class LivePlayActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * 由于onstop会暂停，所以此处需要start player.
+     */
     @Override
     protected void onStart() {
         super.onStart();
@@ -136,6 +146,10 @@ public class LivePlayActivity extends AppCompatActivity {
         Log.d(TAG,"=====onStart start play video");
     }
 
+    /**
+     * 当界面退出到后台后，此处会停止播放，如果没有这只后台播放；
+     * 考虑减少用户流量损失
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -166,6 +180,8 @@ public class LivePlayActivity extends AppCompatActivity {
                 mLivePlayLayouProgress.setVisibility(View.GONE);
             }
         });
+
+        // TODO: 增加错误处理
     }
 
 }

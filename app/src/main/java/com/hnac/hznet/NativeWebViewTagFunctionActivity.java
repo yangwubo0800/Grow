@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.hnac.camera.CameraFunction;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
+import com.hnac.zxing.CaptureActivity;
 
 public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
@@ -156,21 +157,22 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
                             new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
                     if (mGotCameraPermission) {
                         Intent it = new Intent();
-                        it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
+                        it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.CaptureActivity.class);
                         startActivityForResult(it, SCAN_QRCODE_REQUEST);
                     }
                 } else {
                     //已经获得权限，直接开启扫码
                     Log.d(TAG,"=====already has permission");
                     Intent it = new Intent();
-                    it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.QRCodeScanActivity.class);
+                    it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.CaptureActivity.class);
                     startActivityForResult(it, SCAN_QRCODE_REQUEST);
                 }
             }
 
             @JavascriptInterface
             public void livePlay() {
-                LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
+                //LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
+                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
             }
 
             @JavascriptInterface
@@ -183,12 +185,12 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
             @JavascriptInterface
             public void IjkPlayVideo() {
-                IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
             }
 
             @JavascriptInterface
             public void IjkPlayLocalVideo() {
-                IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, localVideoUrl, "LocalVideoTitle");
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, localVideoUrl, "LocalVideoTitle");
             }
 
             @JavascriptInterface
@@ -264,7 +266,7 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
         +" resultCode="+resultCode + " intent="+intent);
         if (null != intent) {
             //扫码结果
-            String scanResult = intent.getStringExtra("result");
+            String scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
             if (resultCode == RESULT_OK) {
                 switch (requestCode) {
                     case SCAN_QRCODE_REQUEST:

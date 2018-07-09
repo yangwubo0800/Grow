@@ -38,13 +38,6 @@
             android:paddingBottom="5dp"
             android:paddingTop="5dp"/>
 
-        <Button
-            android:id="@+id/module_lib"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="跳转到模块中的activity"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"/>
     </LinearLayout>
 
 

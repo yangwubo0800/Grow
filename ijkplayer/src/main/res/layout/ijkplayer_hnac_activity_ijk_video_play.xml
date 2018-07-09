@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".IjkVideoPlayActivity">
+    tools:context=".ui.IjkVideoPlayActivity">
 
     <com.hnac.ijkplayer.IjkVideoView
         android:id="@+id/video_view"
@@ -38,8 +38,8 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/selectPading"
-                android:src="@drawable/ic_return" />
+                android:layout_marginLeft="@dimen/ijkplayer_hnac_selectPading"
+                android:src="@drawable/ijkplayer_hnac_ic_return" />
 
         </LinearLayout>
 
@@ -51,7 +51,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
-            android:textColor="@color/white"
+            android:textColor="@color/ijkplayer_hnac_white"
             android:textSize="18sp"
             android:text="视频标题"
             />
@@ -78,7 +78,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="视频正在加载中...."
-            android:textColor="@color/progress2"/>
+            android:textColor="@color/ijkplayer_hnac_progress2"/>
     </LinearLayout>
 
 
@@ -101,7 +101,7 @@
                 android:layout_height="match_parent"
                 android:layout_centerInParent="true"
                 android:scaleType="centerCrop"
-                android:src="@drawable/play" />
+                android:src="@drawable/ijkplayer_hnac_play" />
         </RelativeLayout>
 
         <LinearLayout
@@ -132,7 +132,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:text=""
-                android:textColor="@color/white"
+                android:textColor="@color/ijkplayer_hnac_white"
                 android:textSize="14dp" />
 
             <TextView
@@ -141,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:text=""
-                android:textColor="@color/white"
+                android:textColor="@color/ijkplayer_hnac_white"
                 android:textSize="14dp" />
         </RelativeLayout>
     </LinearLayout>

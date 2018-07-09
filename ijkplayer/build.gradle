@@ -2,8 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 27
+    resourcePrefix "ijkplayer_hnac_"
 
-
+    lintOptions {
+        abortOnError false
+    }
 
     defaultConfig {
         minSdkVersion 15
@@ -31,11 +34,11 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar','*.aar'])
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    compile(name: 'ijkplayer-java-debug', ext: 'aar')
+    //compile(name: 'ijkplayer-java-debug', ext: 'aar')
 }
