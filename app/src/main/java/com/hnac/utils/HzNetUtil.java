@@ -1,8 +1,15 @@
 package com.hnac.utils;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.support.v4.content.PermissionChecker;
 import android.util.Log;
 
 import com.hnac.hznet.HzNetApp;
@@ -114,4 +121,47 @@ public class HzNetUtil {
         }
     }
 
+    /**
+     * 拨号功能，将号码送至拨号盘，准备拨打
+     * @param activity
+     * @param number
+     */
+    public static void callNumber(Activity activity, String number) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:"+number));
+        activity.startActivity(intent);
+    }
+
+    /**
+     * 检测权限是否授权, 如果已经授权，返回true
+     * @param context
+     * @param permission
+     * @return
+     */
+    public static boolean selfPermissionGranted(Context context, String permission) {
+        int targetSdkVersion = 0;
+        boolean ret = false;
+
+        try {
+            final PackageInfo info = context.getPackageManager().getPackageInfo(
+                    context.getPackageName(), 0);
+            targetSdkVersion = info.applicationInfo.targetSdkVersion;
+            Log.d(TAG,"selfPermissionGranted targetSdkVersion="+targetSdkVersion);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (targetSdkVersion >= Build.VERSION_CODES.M) {
+                ret = context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+            } else {
+                ret = PermissionChecker.checkSelfPermission(context, permission) == PermissionChecker.PERMISSION_GRANTED;
+            }
+        }else{
+            return true;
+        }
+        Log.d(TAG,"selfPermissionGranted permission:" + permission +" grant:" + ret);
+        return ret;
+    }
 }

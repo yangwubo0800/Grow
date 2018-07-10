@@ -2,11 +2,14 @@ package com.hnac.hznet;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.PermissionChecker;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,39 +38,35 @@ import com.hnac.utils.NotificationUtils;
 import com.hnac.utils.ToastUtil;
 import com.hnac.zxing.CaptureActivity;
 
-public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
+public class WebViewActivity extends AppCompatActivity {
 
-    private String  TAG = "NativeWebViewTagFunctionActivity";
+    private String  TAG = "WebViewActivity";
     private WebView mWebviewPage;
     private View mErrorView;
-    private String localFile = "file:///android_asset/main.html";
+    private Context mContext;
     private ProgressBar mProgressBar;
-    private final int SCAN_QRCODE_REQUEST = 2;
-    private final int TAKE_PHOTO_REQUEST = 3;
-    private final int RECORD_VIDEO_REQUEST = 4;
-    private final int PERMISSION_REQUEST_CAMERA = 5;
-    private final int CAMERA_PERMISSIONS_REQUEST_CODE = 6;
+    private final int TAKE_PHOTO_REQUEST = 2;
+    private final int RECORD_VIDEO_REQUEST = 3;
+    private final int SCAN_QRCODE_REQUEST = 4;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_PHOTO = 5;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_VIDEO = 6;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_SCAN = 7;
 
-
+    //本地调试H5
+    private String localFile = "file:///android_asset/main.html";
     //http, 萤石云开发测试地址，直播流
     private String liveUrl = "http://hls.open.ys7.com/openlive/f01018a141094b7fa138b9d0b856507b.hd.m3u8";
-    //RTMP 格式安卓自带mediaPlayer 不支持，直播流
-    private String liveUrl2 = "rtmp://rtmp.open.ys7.com/openlive/0a2cff841ba243809a9a8611e29edc9b.hd";
     //https，录制视频播放
-    //private String videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
     private String videoUrl = "http://175.6.40.67:18894/hznet/app/VID20170430200439.mp4";
-
-    //手机本地视频
-    private String localVideoUrl = "/sdcard/webview_video/VID_20180625_154855.mp4";
-    private boolean mGotCameraPermission = false;
     private String debug = "http://www.baidu.com";
+    private String netVideoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getPermission();
+        mContext = this;
 
-        setContentView(R.layout.activity_native_web_view_tag_function);
+        setContentView(R.layout.activity_web_view);
 
         mWebviewPage = findViewById(R.id.webview_function_page);
         mProgressBar = findViewById(R.id.progressBar);
@@ -76,10 +75,8 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         //设置缓存模式，无网络时依然可以打开已经打开过的网页
         if (HzNetUtil.isNetworkAvailable(this)) {
-            Log.d(TAG,"=====network available");
             webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         } else {
-            Log.d(TAG,"=====network not available");
             webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         }
         webSettings.setDomStorageEnabled(true);
@@ -89,15 +86,16 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                Log.d(TAG,"=====shouldOverrideUrlLoading url=" + url);
+                if (HzNetApp.HzNet_DEBUG) {
+                    Log.d(TAG," shouldOverrideUrlLoading url=" + url);
+                }
                 view.loadUrl(url);
                 return true;
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                String title = view.getTitle();
-                // Log.d(TAG,"=====onPageFinished title=" + title);
+                super.onPageFinished(view, url);
             }
 
             // 旧版本，会在新版本中也可能被调用，所以加上一个判断，防止重复显示
@@ -146,7 +144,7 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
             }
         });
 
-        mWebviewPage.loadUrl(debug);
+        mWebviewPage.loadUrl(localFile);
 
         //注册JS调用的natvie接口
         mWebviewPage.addJavascriptInterface(new Object() {
@@ -158,22 +156,19 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void nativeTakePhoto() {
-                Log.d(TAG,"======nativeTakePhoto");
-                Intent it = new Intent();
-                if (ContextCompat.checkSelfPermission(NativeWebViewTagFunctionActivity.this,
-                        android.Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED) {
-                    //动态申请权限
-                    Log.d(TAG,"=====requestPermissions");
-                    ActivityCompat.requestPermissions(NativeWebViewTagFunctionActivity.this,
-                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-                    if (mGotCameraPermission) {
-                        it = CameraFunction.takePhoto(NativeWebViewTagFunctionActivity.this);
-                    }
-                } else {
-                    it = CameraFunction.takePhoto(NativeWebViewTagFunctionActivity.this);
+                if (HzNetApp.HzNet_DEBUG) {
+                    Log.d(TAG,"nativeTakePhoto");
                 }
-
-                startActivityForResult(it, TAKE_PHOTO_REQUEST);
+                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA)) {
+                    Log.d(TAG,"nativeTakePhoto already has camera permission");
+                    Intent it = CameraFunction.takePhoto(mContext);
+                    startActivityForResult(it, TAKE_PHOTO_REQUEST);
+                } else {
+                    //动态申请权限
+                    Log.d(TAG,"nativeTakePhoto request CAMERA Permissions");
+                    ActivityCompat.requestPermissions(WebViewActivity.this,
+                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_FOR_PHOTO);
+                }
             }
 
             /**
@@ -183,21 +178,19 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void nativeRecordVideo() {
-                Log.d(TAG,"======nativeRecordVideo");
-                Intent it = new Intent();
-                if (ContextCompat.checkSelfPermission(NativeWebViewTagFunctionActivity.this,
-                        android.Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED) {
-                    //动态申请权限
-                    Log.d(TAG,"=====requestPermissions");
-                    ActivityCompat.requestPermissions(NativeWebViewTagFunctionActivity.this,
-                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-                    if (mGotCameraPermission) {
-                        it = CameraFunction.recordVideo(NativeWebViewTagFunctionActivity.this);
-                    }
-                } else {
-                    it = CameraFunction.recordVideo(NativeWebViewTagFunctionActivity.this);
+                if (HzNetApp.HzNet_DEBUG) {
+                    Log.d(TAG,"nativeRecordVideo");
                 }
-                startActivityForResult(it, RECORD_VIDEO_REQUEST);
+                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA)) {
+                    Log.d(TAG,"nativeRecordVideo already has camera permission");
+                    Intent it = CameraFunction.recordVideo(mContext);
+                    startActivityForResult(it, RECORD_VIDEO_REQUEST);
+                } else {
+                    //动态申请权限
+                    Log.d(TAG,"nativeRecordVideo request CAMERA Permissions");
+                    ActivityCompat.requestPermissions(WebViewActivity.this,
+                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_FOR_VIDEO);
+                }
             }
 
             /**
@@ -207,30 +200,26 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void scanQRCode() {
-                if (ContextCompat.checkSelfPermission(NativeWebViewTagFunctionActivity.this,
-                        android.Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED) {
-                    //动态申请权限
-                    Log.d(TAG,"=====requestPermissions");
-                    ActivityCompat.requestPermissions(NativeWebViewTagFunctionActivity.this,
-                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-                    if (mGotCameraPermission) {
-                        Intent it = new Intent();
-                        it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.CaptureActivity.class);
-                        startActivityForResult(it, SCAN_QRCODE_REQUEST);
-                    }
-                } else {
-                    //已经获得权限，直接开启扫码
-                    Log.d(TAG,"=====already has permission");
+                if (HzNetApp.HzNet_DEBUG) {
+                    Log.d(TAG,"scanQRCode");
+                }
+                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA)) {
+                    Log.d(TAG,"scanQRCode already has camera permission");
                     Intent it = new Intent();
-                    it.setClass(NativeWebViewTagFunctionActivity.this, com.hnac.zxing.CaptureActivity.class);
+                    it.setClass(mContext, com.hnac.zxing.CaptureActivity.class);
                     startActivityForResult(it, SCAN_QRCODE_REQUEST);
+                } else {
+                    //动态申请权限
+                    Log.d(TAG,"scanQRCode request CAMERA Permissions");
+                    ActivityCompat.requestPermissions(WebViewActivity.this,
+                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_FOR_SCAN);
                 }
             }
 
             @JavascriptInterface
             public void livePlay() {
-                //LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
-                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, "VideoTitle");
+                //LivePlayActivity.intentTo(mContext, liveUrl, "VideoTitle");
+                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(mContext, liveUrl, "VideoTitle");
             }
 
             /**
@@ -240,23 +229,23 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void livePlay(String liveUrl, String liveTitle) {
-                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, liveUrl, liveTitle);
+                com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(mContext, liveUrl, liveTitle);
             }
 
+
+            /**
+             * 功能：拨号
+             * @param number
+             */
             @JavascriptInterface
-            public void MediaPlayVideo() {
-//                Intent it = new Intent();
-//                it.setClass(NativeWebViewTagFunctionActivity.this, VideoPlayActivity.class);
-//                it.putExtra("videoUrl", videoUrl);
-//                startActivity(it);
-//                Toast.makeText(NativeWebViewTagFunctionActivity.this, "本地mediaPlayer弃用",
-//                        Toast.LENGTH_SHORT).show();
-                ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "本地mediaPlayer已经弃用");
+            public void CallNumber(String number) {
+                HzNetUtil.callNumber(WebViewActivity.this, number);
             }
+
 
             @JavascriptInterface
             public void IjkPlayVideo() {
-                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, "VideoTitle");
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(mContext, videoUrl, "VideoTitle");
             }
 
             /**
@@ -266,13 +255,13 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void IjkPlayVideo(String videoUrl, String videoTitle) {
-                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, videoUrl, videoTitle);
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(mContext, videoUrl, videoTitle);
             }
 
 
             @JavascriptInterface
             public void IjkPlayLocalVideo() {
-                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(NativeWebViewTagFunctionActivity.this, localVideoUrl, "LocalVideoTitle");
+                com.hnac.ijkplayer.ui.IjkVideoPlayActivity.intentTo(mContext, netVideoUrl, "LocalVideoTitle");
             }
 
             /**
@@ -282,14 +271,28 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
              */
             @JavascriptInterface
             public void CleanWebCache() {
-                HzNetUtil.clearCacheFile(NativeWebViewTagFunctionActivity.this);
+                HzNetUtil.clearCacheFile(mContext);
             }
 
             @JavascriptInterface
             public void SendNotification() {
-                NotificationUtils.getInstance(NativeWebViewTagFunctionActivity.this).setNotificationTitle("test_title");
-                NotificationUtils.getInstance(NativeWebViewTagFunctionActivity.this).setNotificationContent("test_content");
-                NotificationUtils.getInstance(NativeWebViewTagFunctionActivity.this).sendNotification(null, 1001);
+                NotificationUtils.getInstance(mContext).setNotificationTitle("test_title");
+                NotificationUtils.getInstance(mContext).setNotificationContent("test_content");
+                NotificationUtils.getInstance(mContext).sendNotification(null, 1001);
+                //自定义通知
+                //NotificationUtils.getInstance(WebViewTagFunctionActivity.this).sendCustomNotification();
+            }
+
+            /**
+             * 功能：发送通知给状态栏
+             * @param title
+             * @param content
+             */
+            @JavascriptInterface
+            public void SendNotification(String title, String content) {
+                NotificationUtils.getInstance(mContext).setNotificationTitle(title);
+                NotificationUtils.getInstance(mContext).setNotificationContent(content);
+                NotificationUtils.getInstance(mContext).sendNotification(null, 1001);
                 //自定义通知
                 //NotificationUtils.getInstance(WebViewTagFunctionActivity.this).sendCustomNotification();
             }
@@ -355,34 +358,36 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
      * @param intent
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        Log.d(TAG,"=====onActivityResult requestCode="+requestCode
-        +" resultCode="+resultCode + " intent="+intent);
+        Log.d(TAG,"onActivityResult requestCode="+requestCode
+                +" resultCode="+resultCode + " intent="+intent);
         String scanResult = null;
+
         if (null != intent) {
             //扫码结果
             scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
         }
+        // 处理各种返回值
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case SCAN_QRCODE_REQUEST:
                     //返回给JS
                     mWebviewPage.loadUrl("javascript:funFromjs('" + scanResult + "')");
-                    ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "扫码结果：" + scanResult);
+                    ToastUtil.makeText(mContext, "扫码结果：" + scanResult);
                     break;
                 case TAKE_PHOTO_REQUEST:
-                    Log.d(TAG,"=======onActivityResult TAKE_PHOTO_REQUEST ");
+                    Log.d(TAG,"onActivityResult TAKE_PHOTO_REQUEST ");
                     if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
-                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "拍照失败了");
+                        ToastUtil.makeText(mContext, "拍照失败了");
                     } else {
-                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "照片生成路径：" + CameraFunction.fileFullName);
+                        ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunction.fileFullName);
                     }
                     break;
                 case RECORD_VIDEO_REQUEST:
-                    Log.d(TAG,"=======onActivityResult RECORD_VIDEO_REQUEST");
+                    Log.d(TAG,"onActivityResult RECORD_VIDEO_REQUEST");
                     if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
-                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "录像失败了");
+                        ToastUtil.makeText(mContext, "录像失败了");
                     } else {
-                        ToastUtil.makeText(NativeWebViewTagFunctionActivity.this, "录像生成路径：" + CameraFunction.fileFullName);
+                        ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunction.fileFullName);
                     }
                     break;
                 default:
@@ -390,6 +395,10 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
+
 
     /**
      * 权限请求结果处理
@@ -399,44 +408,55 @@ public class NativeWebViewTagFunctionActivity extends AppCompatActivity {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults );
-        Log.d(TAG,"=====onRequestPermissionsResult requestCode="+requestCode);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults );
+        Log.d(TAG,"onRequestPermissionsResult requestCode="+requestCode);
         switch (requestCode) {
-            case PERMISSION_REQUEST_CAMERA:
+            case PERMISSION_REQUEST_CAMERA_FOR_PHOTO:
                 if (null != grantResults && grantResults.length > 0) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
-//                        Intent it = new Intent();
-//                        it.setClass(NativeWebViewTagFunctionActivity.this, QRCodeScanActivity.class);
-//                        startActivityForResult(it, SCAN_QRCODE_REQUEST);
-                        Log.d(TAG,"=====onRequestPermissionsResult permission get succeed");
-                        mGotCameraPermission = true;
+                        Intent it = CameraFunction.takePhoto(mContext);
+                        startActivityForResult(it, TAKE_PHOTO_REQUEST);
+                        Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_PHOTO permission get succeed");
                     } else {
-                        Toast.makeText(NativeWebViewTagFunctionActivity.this, "请打开相机权限",
-                                Toast.LENGTH_LONG).show();
+                        ToastUtil.makeText(mContext, "请打开相机权限");
                     }
                 } else {
-                    Log.d(TAG,"=====onRequestPermissionsResult no grant result");
-                    Toast.makeText(NativeWebViewTagFunctionActivity.this, "请打开相机权限",
-                            Toast.LENGTH_LONG).show();
+                    Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_PHOTO no grant result");
+                    ToastUtil.makeText(mContext, "请打开相机权限");
+                }
+                break;
+
+            case PERMISSION_REQUEST_CAMERA_FOR_VIDEO:
+                if (null != grantResults && grantResults.length > 0) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                        Intent it = CameraFunction.recordVideo(mContext);
+                        startActivityForResult(it, RECORD_VIDEO_REQUEST);
+                        Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_VIDEO permission get succeed");
+                    } else {
+                        ToastUtil.makeText(mContext, "请打开相机权限");
+                    }
+                } else {
+                    Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_VIDEO no grant result");
+                    ToastUtil.makeText(mContext, "请打开相机权限");
+                }
+                break;
+            case PERMISSION_REQUEST_CAMERA_FOR_SCAN:
+                if (null != grantResults && grantResults.length > 0) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                        Intent it = new Intent();
+                        it.setClass(mContext, com.hnac.zxing.CaptureActivity.class);
+                        startActivityForResult(it, SCAN_QRCODE_REQUEST);
+                        Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_SCAN permission get succeed");
+                    } else {
+                        ToastUtil.makeText(mContext, "请打开相机权限");
+                    }
+                } else {
+                    Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_SCAN no grant result");
+                    ToastUtil.makeText(mContext, "请打开相机权限");
                 }
                 break;
             default:
                 break;
-        }
-    }
-
-
-    //Android7.0获取照相机权限
-    private void getPermission(){
-        Log.d(TAG,"======getPermission");
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-                Toast.makeText(NativeWebViewTagFunctionActivity.this, "您已经拒绝过一次", Toast.LENGTH_LONG).show();
-            }
-            Log.d(TAG,"======getPermission requestPermissions");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, CAMERA_PERMISSIONS_REQUEST_CODE);
         }
     }
 

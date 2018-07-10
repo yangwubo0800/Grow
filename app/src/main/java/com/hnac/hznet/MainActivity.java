@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 //                    it.setClass(MainActivity.this, WebViewTagFunctionActivity.class);
 //                    break;
                 case R.id.native_webview_tag_function:
-                    it.setClass(MainActivity.this, NativeWebViewTagFunctionActivity.class);
+                    it.setClass(MainActivity.this, WebViewActivity.class);
                     break;
                 default:
                     break;
