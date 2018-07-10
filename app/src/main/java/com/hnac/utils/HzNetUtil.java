@@ -18,7 +18,7 @@ import java.io.File;
 
 public class HzNetUtil {
 
-    private static final String TAG = HzNetUtil.class.getClass().getName();
+    private static final String TAG = HzNetUtil.class.getSimpleName();
 
     /**
      * 检测是否联网

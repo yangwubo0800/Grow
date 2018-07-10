@@ -65,7 +65,6 @@ public class WebViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
-
         setContentView(R.layout.activity_web_view);
 
         mWebviewPage = findViewById(R.id.webview_function_page);
@@ -150,9 +149,11 @@ public class WebViewActivity extends AppCompatActivity {
         mWebviewPage.addJavascriptInterface(new Object() {
 
             /**
-             * 功能：供JS使用，提供拍照功能，生成照片路径无法直接返回，需要等相机界面返回
+             * 功能：供JS使用，提供拍照功能，生成照片路径无法直接返回，
+             * 需要等相机界面返回，JS可提供接口供native调用返回照片路径或者文件流
              * 参数：无
              * 返回值：无
+             * 使用方式：window.functionTag.nativeTakePhoto()
              */
             @JavascriptInterface
             public void nativeTakePhoto() {
@@ -172,9 +173,11 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 功能：供JS使用，提供录像功能，生成录像路径无法直接返回，需要等相机界面返回
+             * 功能：供JS使用，提供录像功能，生成录像路径无法直接返回，
+             * 需要等相机界面返回，JS可提供接口供native调用返回录像路径或者文件流
              * 参数：无
              * 返回值：无
+             * 使用方式：window.functionTag.nativeRecordVideo()
              */
             @JavascriptInterface
             public void nativeRecordVideo() {
@@ -194,9 +197,11 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 功能：供JS使用，提供扫码功能，生成扫码信息无法直接返回，需要等相机界面返回
+             * 功能：供JS使用，提供扫码功能，生成扫码信息无法直接返回，
+             * 需要等相机界面返回，JS可提供接口供native调用返回扫码信息
              * 参数：无
              * 返回值：无
+             * 使用方式：window.functionTag.scanQRCode()
              */
             @JavascriptInterface
             public void scanQRCode() {
@@ -223,23 +228,16 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 由JS传入直播地址和标题
-             * @param liveUrl
-             * @param liveTitle
+             * 功能：由JS调用，传入直播源后可以进入直播界面
+             * 参数：
+             * @param liveUrl 直播流地址，字符串类型
+             * @param liveTitle 直播界面显示的标题信息，字符串类型
+             * 返回值：无
+             * 使用方式：window.functionTag.livePlay(liveUrl，liveTitle)
              */
             @JavascriptInterface
             public void livePlay(String liveUrl, String liveTitle) {
                 com.hnac.ijkplayer.ui.LivePlayActivity.intentTo(mContext, liveUrl, liveTitle);
-            }
-
-
-            /**
-             * 功能：拨号
-             * @param number
-             */
-            @JavascriptInterface
-            public void CallNumber(String number) {
-                HzNetUtil.callNumber(WebViewActivity.this, number);
             }
 
 
@@ -249,9 +247,12 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 由JS 传入视频地址和标题
-             * @param videoUrl
-             * @param videoTitle
+             * 功能：由JS调用，传入视频源后可以进入视频播放界面
+             * 参数：
+             * @param videoUrl：视频播放源地址，字符串类型。
+             * @param videoTitle：视频播放界面标题，字符串类型。
+             * 返回值：无
+             * 使用方式：window.functionTag.IjkPlayVideo(videoUrl，videoTitle)
              */
             @JavascriptInterface
             public void IjkPlayVideo(String videoUrl, String videoTitle) {
@@ -265,9 +266,10 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 功能：提供清理缓存功能
+             * 功能：提供清理缓存功能，将webview产生的缓存目录文件全部删除
              * 参数：无
              * 返回值：无
+             * 使用方式：window.functionTag.CleanWebCache()
              */
             @JavascriptInterface
             public void CleanWebCache() {
@@ -284,9 +286,13 @@ public class WebViewActivity extends AppCompatActivity {
             }
 
             /**
-             * 功能：发送通知给状态栏
-             * @param title
-             * @param content
+             * 功能：发送通知给状态栏，目前此接口还知识测试功能，
+             * 关于点击通知跳转的页面还没有确认，后续还要和服务器配合做推送功能
+             * 参数：
+             * @param title：通知标题，字符串类型。
+             * @param content，通知内容，字符串类型
+             * 返回值：无
+             * 使用方式：window.functionTag.SendNotification(title，content)
              */
             @JavascriptInterface
             public void SendNotification(String title, String content) {
@@ -295,6 +301,18 @@ public class WebViewActivity extends AppCompatActivity {
                 NotificationUtils.getInstance(mContext).sendNotification(null, 1001);
                 //自定义通知
                 //NotificationUtils.getInstance(WebViewTagFunctionActivity.this).sendCustomNotification();
+            }
+
+            /**
+             * 功能：拨号,通过传入号码可以实现直接跳转到拨号盘界面，拨打客服号码
+             * 参数：
+             * @param number：电话号码，字符串类型
+             * 返回值：无
+             * 使用方式：window.functionTag.CallNumber(number)
+             */
+            @JavascriptInterface
+            public void CallNumber(String number) {
+                HzNetUtil.callNumber(WebViewActivity.this, number);
             }
 
 
@@ -460,7 +478,9 @@ public class WebViewActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * 显示出错页面
+     */
     protected void showErrorPage() {
         LinearLayout webParentView = (LinearLayout)mWebviewPage.getParent();
         initErrorPage();//初始化自定义页面
