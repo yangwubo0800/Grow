@@ -34,3 +34,7 @@
 
 #-libraryjars libs/ijkplayer-java-debug.aar
 -keep class tv.danmaku.ijk.media.player.** {*;}
+
+-keepclassmembers class * extends android.webkit.WebChromeClient {
+   public void openFileChooser(...);
+}

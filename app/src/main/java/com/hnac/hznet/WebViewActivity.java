@@ -2,11 +2,18 @@ package com.hnac.hznet;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
@@ -20,6 +27,7 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -36,7 +44,10 @@ import com.hnac.camera.CameraFunction;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
 import com.hnac.utils.ToastUtil;
+import com.hnac.utils.UriUtils;
 import com.hnac.zxing.CaptureActivity;
+
+import java.io.File;
 
 public class WebViewActivity extends AppCompatActivity {
 
@@ -48,9 +59,12 @@ public class WebViewActivity extends AppCompatActivity {
     private final int TAKE_PHOTO_REQUEST = 2;
     private final int RECORD_VIDEO_REQUEST = 3;
     private final int SCAN_QRCODE_REQUEST = 4;
-    private final int PERMISSION_REQUEST_CAMERA_FOR_PHOTO = 5;
-    private final int PERMISSION_REQUEST_CAMERA_FOR_VIDEO = 6;
-    private final int PERMISSION_REQUEST_CAMERA_FOR_SCAN = 7;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_PHOTO = 10;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_VIDEO = 11;
+    private final int PERMISSION_REQUEST_CAMERA_FOR_SCAN = 12;
+    public static final int REQUEST_FILE_PICKER = 101;
+    public ValueCallback<Uri> mFilePathCallback;
+    public ValueCallback<Uri[]> mFilePathCallbacks;
 
     //本地调试H5
     private String localFile = "file:///android_asset/main.html";
@@ -140,6 +154,65 @@ public class WebViewActivity extends AppCompatActivity {
                     mProgressBar.setVisibility(View.VISIBLE);
                 }
                 super.onProgressChanged(view, newProgress);
+            }
+
+            // Android < 3.0 调用这个方法
+            public void openFileChooser(ValueCallback<Uri> filePathCallback) {
+                mFilePathCallback = filePathCallback;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                WebViewActivity.this.startActivityForResult(Intent.createChooser(intent, "File Chooser"),
+                        REQUEST_FILE_PICKER);
+            }
+            // 3.0 + 调用这个方法
+            public void openFileChooser(ValueCallback filePathCallback,
+                                        String acceptType) {
+                mFilePathCallback = filePathCallback;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                WebViewActivity.this.startActivityForResult(Intent.createChooser(intent, "File Chooser"),
+                        REQUEST_FILE_PICKER);
+            }
+            //  / js上传文件的<input type="file" name="fileField" id="fileField" />事件捕获
+            // Android > 4.1.1 调用这个方法
+            public void openFileChooser(ValueCallback<Uri> filePathCallback,
+                                        String acceptType, String capture) {
+                mFilePathCallback = filePathCallback;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                WebViewActivity.this.startActivityForResult(Intent.createChooser(intent, "File Chooser"),
+                        REQUEST_FILE_PICKER);
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public boolean onShowFileChooser(WebView webView,
+                                             ValueCallback<Uri[]> filePathCallback,
+                                             WebChromeClient.FileChooserParams fileChooserParams) {
+                mFilePathCallbacks = filePathCallback;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+                // TODO: 根据标签中得接收类型，启动对应的文件类型选择器
+                String[] acceptTypes = fileChooserParams.getAcceptTypes();
+                if (acceptTypes.length > 0) {
+                    if (acceptTypes[0].contains("image")) {
+                        intent.setType("image/*");
+                    } else if (acceptTypes[0].contains("video")) {
+                        intent.setType("video/*");
+                    } else {
+                        intent.setType("*/*");
+                    }
+                } else {
+                    intent.setType("*/*");
+                }
+
+                WebViewActivity.this.startActivityForResult(Intent.createChooser(intent, "File Chooser"),
+                        REQUEST_FILE_PICKER);
+                return true;
             }
         });
 
@@ -315,7 +388,6 @@ public class WebViewActivity extends AppCompatActivity {
                 HzNetUtil.callNumber(WebViewActivity.this, number);
             }
 
-
         }, "functionTag");
     }
 
@@ -398,6 +470,15 @@ public class WebViewActivity extends AppCompatActivity {
                         ToastUtil.makeText(mContext, "拍照失败了");
                     } else {
                         ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunction.fileFullName);
+
+                        // TODO: 扫描新生成的文件到媒体库
+                        MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                                null, new MediaScannerConnection.OnScanCompletedListener() {
+                                    public void onScanCompleted(String path, Uri uri) {
+                                        Log.i(TAG, "Scanned " + path + ":");
+                                        Log.i(TAG, "-> uri=" + uri);
+                                    }
+                                });
                     }
                     break;
                 case RECORD_VIDEO_REQUEST:
@@ -406,11 +487,54 @@ public class WebViewActivity extends AppCompatActivity {
                         ToastUtil.makeText(mContext, "录像失败了");
                     } else {
                         ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunction.fileFullName);
+                        // TODO: 扫描新生成的文件到媒体库
+                        MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                                null, new MediaScannerConnection.OnScanCompletedListener() {
+                                    public void onScanCompleted(String path, Uri uri) {
+                                        Log.i(TAG, "Scanned " + path + ":");
+                                        Log.i(TAG, "-> uri=" + uri);
+                                    }
+                                });
                     }
                     break;
                 default:
                     break;
             }
+        } else {
+            Log.d(TAG,"resultCode is not OK");
+        }
+        // TODO: resultCode OK or KO should process it.
+        if (requestCode == REQUEST_FILE_PICKER) {
+            Log.d(TAG,"onActivityResult REQUEST_FILE_PICKER" +
+                    " mFilePathCallback=" + mFilePathCallback +
+                    " mFilePathCallbacks=" + mFilePathCallbacks);
+            if (mFilePathCallback != null) {
+                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null
+                        : intent.getData();
+                if (result != null) {
+                    String path = UriUtils.getPath(getApplicationContext(),
+                            result);
+                    Uri uri = Uri.fromFile(new File(path));
+                    mFilePathCallback.onReceiveValue(uri);
+                } else {
+                    mFilePathCallback.onReceiveValue(null);
+                }
+            }
+            if (mFilePathCallbacks != null) {
+                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null
+                        : intent.getData();
+                if (result != null) {
+                    String path = UriUtils.getPath(getApplicationContext(),
+                            result);
+                    Uri uri = Uri.fromFile(new File(path));
+                    mFilePathCallbacks.onReceiveValue(new Uri[] { uri });
+                } else {
+                    mFilePathCallbacks.onReceiveValue(null);
+                }
+            }
+
+            mFilePathCallback = null;
+            mFilePathCallbacks = null;
         }
     }
 
