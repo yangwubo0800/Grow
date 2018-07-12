@@ -20,8 +20,8 @@ import java.util.List;
 public class CameraFunction {
 
     private static final String TAG = "CameraFunction";
-    private Context mContext;
-    //生成文件路径，全局变量，供外面使用
+
+    //生成文件路径，全局变量，供外面使用,相当于是工具类了，不以对象提供，而以静态类暴露
     public static String fileFullName;
     private static String FILE_PROVIDER_AUTHORTIES = "com.hznet.fileprovider";
     private static String PHOTO_PATH = "/hznet/photo/";

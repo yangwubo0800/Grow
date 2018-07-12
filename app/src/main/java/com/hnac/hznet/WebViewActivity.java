@@ -59,6 +59,8 @@ public class WebViewActivity extends AppCompatActivity {
     private final int TAKE_PHOTO_REQUEST = 2;
     private final int RECORD_VIDEO_REQUEST = 3;
     private final int SCAN_QRCODE_REQUEST = 4;
+    private final int TAKE_PHOTO_AND_UPLOAD_REQUEST = 5;
+    private final int RECORD_VIDEO_AND_UPLOAD_REQUEST = 6;
     private final int PERMISSION_REQUEST_CAMERA_FOR_PHOTO = 10;
     private final int PERMISSION_REQUEST_CAMERA_FOR_VIDEO = 11;
     private final int PERMISSION_REQUEST_CAMERA_FOR_SCAN = 12;
@@ -193,11 +195,29 @@ public class WebViewActivity extends AppCompatActivity {
                                              ValueCallback<Uri[]> filePathCallback,
                                              WebChromeClient.FileChooserParams fileChooserParams) {
                 mFilePathCallbacks = filePathCallback;
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-
                 // TODO: 根据标签中得接收类型，启动对应的文件类型选择器
                 String[] acceptTypes = fileChooserParams.getAcceptTypes();
+                for (String type : acceptTypes) {
+                    Log.d(TAG, "acceptTypes=" + type);
+                }
+                // 针对拍照后马上进入上传状态处理
+                if ((acceptTypes.length > 0) && acceptTypes[0].equals("image/example")) {
+                    Log.d(TAG, "onShowFileChooser takePhoto");
+                    Intent it = CameraFunction.takePhoto(mContext);
+                    startActivityForResult(it, TAKE_PHOTO_AND_UPLOAD_REQUEST);
+                    return true;
+                }
+
+                // 针对录像后马上进入上传状态处理
+                if ((acceptTypes.length > 0) && acceptTypes[0].equals("video/example")) {
+                    Log.d(TAG, "onShowFileChooser record video");
+                    Intent it = CameraFunction.recordVideo(mContext);
+                    startActivityForResult(it, RECORD_VIDEO_AND_UPLOAD_REQUEST);
+                    return true;
+                }
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
                 if (acceptTypes.length > 0) {
                     if (acceptTypes[0].contains("image")) {
                         intent.setType("image/*");
@@ -450,20 +470,22 @@ public class WebViewActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         Log.d(TAG,"onActivityResult requestCode="+requestCode
                 +" resultCode="+resultCode + " intent="+intent);
-        String scanResult = null;
 
-        if (null != intent) {
-            //扫码结果
-            scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
-        }
         // 处理各种返回值
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
+                //扫码
                 case SCAN_QRCODE_REQUEST:
                     //返回给JS
+                    String scanResult = null;
+                    if (null != intent) {
+                        //扫码结果
+                        scanResult = intent.getStringExtra(CaptureActivity.KEY_DATA);
+                    }
                     mWebviewPage.loadUrl("javascript:funFromjs('" + scanResult + "')");
                     ToastUtil.makeText(mContext, "扫码结果：" + scanResult);
                     break;
+                //照相
                 case TAKE_PHOTO_REQUEST:
                     Log.d(TAG,"onActivityResult TAKE_PHOTO_REQUEST ");
                     if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
@@ -481,6 +503,7 @@ public class WebViewActivity extends AppCompatActivity {
                                 });
                     }
                     break;
+                //录像
                 case RECORD_VIDEO_REQUEST:
                     Log.d(TAG,"onActivityResult RECORD_VIDEO_REQUEST");
                     if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
@@ -501,45 +524,104 @@ public class WebViewActivity extends AppCompatActivity {
                     break;
             }
         } else {
+            // TODO: 清理全局变量文件路径
+            CameraFunction.fileFullName = null;
             Log.d(TAG,"resultCode is not OK");
         }
-        // TODO: resultCode OK or KO should process it.
-        if (requestCode == REQUEST_FILE_PICKER) {
-            Log.d(TAG,"onActivityResult REQUEST_FILE_PICKER" +
-                    " mFilePathCallback=" + mFilePathCallback +
-                    " mFilePathCallbacks=" + mFilePathCallbacks);
-            if (mFilePathCallback != null) {
-                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null
-                        : intent.getData();
-                if (result != null) {
-                    String path = UriUtils.getPath(getApplicationContext(),
-                            result);
-                    Uri uri = Uri.fromFile(new File(path));
-                    mFilePathCallback.onReceiveValue(uri);
-                } else {
-                    mFilePathCallback.onReceiveValue(null);
-                }
-            }
-            if (mFilePathCallbacks != null) {
-                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null
-                        : intent.getData();
-                if (result != null) {
-                    String path = UriUtils.getPath(getApplicationContext(),
-                            result);
-                    Uri uri = Uri.fromFile(new File(path));
-                    mFilePathCallbacks.onReceiveValue(new Uri[] { uri });
-                } else {
-                    mFilePathCallbacks.onReceiveValue(null);
-                }
-            }
 
-            mFilePathCallback = null;
-            mFilePathCallbacks = null;
+        // TODO: resultCode OK or KO should process it for H5 input tag.
+        switch (requestCode) {
+            case REQUEST_FILE_PICKER:
+                Log.d(TAG,"onActivityResult REQUEST_FILE_PICKER" +
+                        " mFilePathCallback=" + mFilePathCallback +
+                        " mFilePathCallbacks=" + mFilePathCallbacks);
+                Uri result = (intent == null || resultCode != Activity.RESULT_OK) ? null : intent.getData();
+                setFilePathCallback(result, null);
+                break;
+            //照相并选择该文件
+            case TAKE_PHOTO_AND_UPLOAD_REQUEST:
+                Log.d(TAG,"onActivityResult TAKE_PHOTO_AND_UPLOAD_REQUEST ");
+                if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                    ToastUtil.makeText(mContext, "拍照失败了");
+                } else {
+                    ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunction.fileFullName);
+                    // TODO: 扫描新生成的文件到媒体库
+                    MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                            null, new MediaScannerConnection.OnScanCompletedListener() {
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i(TAG, "Scanned " + path + ":");
+                                    Log.i(TAG, "-> uri=" + uri);
+                                }
+                            });
+                }
+                //对 input 标签中设置  拍照路径回调，不论成败
+                setFilePathCallback(null, CameraFunction.fileFullName);
+                break;
+            //录像并选择该文件
+            case RECORD_VIDEO_AND_UPLOAD_REQUEST:
+                Log.d(TAG,"onActivityResult RECORD_VIDEO_AND_UPLOAD_REQUEST ");
+                if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                    ToastUtil.makeText(mContext, "录像失败了");
+                } else {
+                    ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunction.fileFullName);
+                    // TODO: 扫描新生成的文件到媒体库
+                    MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                            null, new MediaScannerConnection.OnScanCompletedListener() {
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i(TAG, "Scanned " + path + ":");
+                                    Log.i(TAG, "-> uri=" + uri);
+                                }
+                            });
+                }
+                //对 input 标签中设置  拍照路径回调，不论成败
+                setFilePathCallback(null, CameraFunction.fileFullName);
+                break;
+            default:
+                break;
         }
     }
 
+    /**
+     * 设置input 标签出发的回调选择文件路径，优先使用path参数，
+     * 其次使用uri参数
+     * @param uriParam
+     * @param pathParam
+     */
+    private void setFilePathCallback(Uri uriParam, String pathParam) {
+        //都为空，则设置null
+        if (uriParam == null && pathParam == null) {
+            if (mFilePathCallback != null) {
+                mFilePathCallback.onReceiveValue(null);
+            }
+            if (mFilePathCallbacks != null) {
+                mFilePathCallbacks.onReceiveValue(null);
+            }
+        } else if (null != pathParam) { // 优先使用path
+            if (mFilePathCallback != null) {
+                Uri uri = Uri.fromFile(new File(pathParam));
+                mFilePathCallback.onReceiveValue(uri);
+            }
+            if (mFilePathCallbacks != null) {
+                Uri uri = Uri.fromFile(new File(pathParam));
+                mFilePathCallbacks.onReceiveValue(new Uri[] { uri });
+            }
+        } else if (null != uriParam) { //其次使用uri
+            if (mFilePathCallback != null) {
+                String path = UriUtils.getPath(getApplicationContext(), uriParam);
+                Uri uri = Uri.fromFile(new File(path));
+                mFilePathCallback.onReceiveValue(uri);
+            }
+            if (mFilePathCallbacks != null) {
+                String path = UriUtils.getPath(getApplicationContext(), uriParam);
+                Uri uri = Uri.fromFile(new File(path));
+                mFilePathCallbacks.onReceiveValue(new Uri[] { uri });
+            }
+        }
 
+        mFilePathCallback = null;
+        mFilePathCallbacks = null;
 
+    }
 
 
     /**
