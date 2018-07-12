@@ -253,7 +253,8 @@ public class WebViewActivity extends AppCompatActivity {
                 if (HzNetApp.HzNet_DEBUG) {
                     Log.d(TAG,"nativeTakePhoto");
                 }
-                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA)) {
+                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA) &&
+                        HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Log.d(TAG,"nativeTakePhoto already has camera permission");
                     Intent it = CameraFunction.takePhoto(mContext);
                     startActivityForResult(it, TAKE_PHOTO_REQUEST);
@@ -261,7 +262,8 @@ public class WebViewActivity extends AppCompatActivity {
                     //动态申请权限
                     Log.d(TAG,"nativeTakePhoto request CAMERA Permissions");
                     ActivityCompat.requestPermissions(WebViewActivity.this,
-                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_FOR_PHOTO);
+                            new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_CAMERA_FOR_PHOTO);
                 }
             }
 
@@ -277,7 +279,8 @@ public class WebViewActivity extends AppCompatActivity {
                 if (HzNetApp.HzNet_DEBUG) {
                     Log.d(TAG,"nativeRecordVideo");
                 }
-                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA)) {
+                if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA) &&
+                        HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Log.d(TAG,"nativeRecordVideo already has camera permission");
                     Intent it = CameraFunction.recordVideo(mContext);
                     startActivityForResult(it, RECORD_VIDEO_REQUEST);
@@ -285,7 +288,8 @@ public class WebViewActivity extends AppCompatActivity {
                     //动态申请权限
                     Log.d(TAG,"nativeRecordVideo request CAMERA Permissions");
                     ActivityCompat.requestPermissions(WebViewActivity.this,
-                            new String[]{android.Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_FOR_VIDEO);
+                            new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            PERMISSION_REQUEST_CAMERA_FOR_VIDEO);
                 }
             }
 
@@ -637,31 +641,33 @@ public class WebViewActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_CAMERA_FOR_PHOTO:
                 if (null != grantResults && grantResults.length > 0) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                            grantResults[1] == PackageManager.PERMISSION_GRANTED){
                         Intent it = CameraFunction.takePhoto(mContext);
                         startActivityForResult(it, TAKE_PHOTO_REQUEST);
                         Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_PHOTO permission get succeed");
                     } else {
-                        ToastUtil.makeText(mContext, "请打开相机权限");
+                        ToastUtil.makeText(mContext, "请打开相机 或者 文件读写权限");
                     }
                 } else {
                     Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_PHOTO no grant result");
-                    ToastUtil.makeText(mContext, "请打开相机权限");
+                    ToastUtil.makeText(mContext, "请打开相机 或者 文件读写权限");
                 }
                 break;
 
             case PERMISSION_REQUEST_CAMERA_FOR_VIDEO:
                 if (null != grantResults && grantResults.length > 0) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                            grantResults[1] == PackageManager.PERMISSION_GRANTED){
                         Intent it = CameraFunction.recordVideo(mContext);
                         startActivityForResult(it, RECORD_VIDEO_REQUEST);
                         Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_VIDEO permission get succeed");
                     } else {
-                        ToastUtil.makeText(mContext, "请打开相机权限");
+                        ToastUtil.makeText(mContext, "请打开相机  或者 文件读写权限");
                     }
                 } else {
                     Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_VIDEO no grant result");
-                    ToastUtil.makeText(mContext, "请打开相机权限");
+                    ToastUtil.makeText(mContext, "请打开相机  或者 文件读写权限");
                 }
                 break;
             case PERMISSION_REQUEST_CAMERA_FOR_SCAN:
