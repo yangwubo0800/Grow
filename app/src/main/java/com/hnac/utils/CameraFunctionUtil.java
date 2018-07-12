@@ -1,4 +1,4 @@
-package com.hnac.camera;
+package com.hnac.utils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +12,12 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class CameraFunction {
-
-    private static final String TAG = "CameraFunction";
+public class CameraFunctionUtil {
+    private static final String TAG = "CameraFunctionUtil";
 
     //生成文件路径，全局变量，供外面使用,相当于是工具类了，不以对象提供，而以静态类暴露
     public static String fileFullName;
@@ -98,7 +96,7 @@ public class CameraFunction {
      * 提供拍照功能
      * @param context
      */
-    public static  Intent takePhoto(Context context) {
+    public static Intent takePhoto(Context context) {
         Log.d(TAG, "=====takePhoto");
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePhotoIntent.putExtra(MediaStore.EXTRA_MEDIA_TITLE, "TakePhoto");
@@ -118,8 +116,6 @@ public class CameraFunction {
             }
             takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, contentUri);
             takePhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-//            context.startActivity(takePhotoIntent);
         }
 
         return takePhotoIntent;
@@ -148,7 +144,6 @@ public class CameraFunction {
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
             recordVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, contentUri);
-            //context.startActivity(recordVideoIntent);
         }
 
         return recordVideoIntent;

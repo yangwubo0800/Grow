@@ -40,7 +40,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.hnac.camera.CameraFunction;
+import com.hnac.utils.CameraFunctionUtil;
 import com.hnac.utils.HzNetUtil;
 import com.hnac.utils.NotificationUtils;
 import com.hnac.utils.ToastUtil;
@@ -203,7 +203,7 @@ public class WebViewActivity extends AppCompatActivity {
                 // 针对拍照后马上进入上传状态处理
                 if ((acceptTypes.length > 0) && acceptTypes[0].equals("image/example")) {
                     Log.d(TAG, "onShowFileChooser takePhoto");
-                    Intent it = CameraFunction.takePhoto(mContext);
+                    Intent it = CameraFunctionUtil.takePhoto(mContext);
                     startActivityForResult(it, TAKE_PHOTO_AND_UPLOAD_REQUEST);
                     return true;
                 }
@@ -211,7 +211,7 @@ public class WebViewActivity extends AppCompatActivity {
                 // 针对录像后马上进入上传状态处理
                 if ((acceptTypes.length > 0) && acceptTypes[0].equals("video/example")) {
                     Log.d(TAG, "onShowFileChooser record video");
-                    Intent it = CameraFunction.recordVideo(mContext);
+                    Intent it = CameraFunctionUtil.recordVideo(mContext);
                     startActivityForResult(it, RECORD_VIDEO_AND_UPLOAD_REQUEST);
                     return true;
                 }
@@ -256,7 +256,7 @@ public class WebViewActivity extends AppCompatActivity {
                 if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA) &&
                         HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Log.d(TAG,"nativeTakePhoto already has camera permission");
-                    Intent it = CameraFunction.takePhoto(mContext);
+                    Intent it = CameraFunctionUtil.takePhoto(mContext);
                     startActivityForResult(it, TAKE_PHOTO_REQUEST);
                 } else {
                     //动态申请权限
@@ -282,7 +282,7 @@ public class WebViewActivity extends AppCompatActivity {
                 if (HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.CAMERA) &&
                         HzNetUtil.selfPermissionGranted(mContext, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Log.d(TAG,"nativeRecordVideo already has camera permission");
-                    Intent it = CameraFunction.recordVideo(mContext);
+                    Intent it = CameraFunctionUtil.recordVideo(mContext);
                     startActivityForResult(it, RECORD_VIDEO_REQUEST);
                 } else {
                     //动态申请权限
@@ -492,13 +492,13 @@ public class WebViewActivity extends AppCompatActivity {
                 //照相
                 case TAKE_PHOTO_REQUEST:
                     Log.d(TAG,"onActivityResult TAKE_PHOTO_REQUEST ");
-                    if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                    if (TextUtils.isEmpty(CameraFunctionUtil.fileFullName)) {
                         ToastUtil.makeText(mContext, "拍照失败了");
                     } else {
-                        ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunction.fileFullName);
+                        ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunctionUtil.fileFullName);
 
                         // TODO: 扫描新生成的文件到媒体库
-                        MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                        MediaScannerConnection.scanFile(this, new String[] { CameraFunctionUtil.fileFullName },
                                 null, new MediaScannerConnection.OnScanCompletedListener() {
                                     public void onScanCompleted(String path, Uri uri) {
                                         Log.i(TAG, "Scanned " + path + ":");
@@ -510,12 +510,12 @@ public class WebViewActivity extends AppCompatActivity {
                 //录像
                 case RECORD_VIDEO_REQUEST:
                     Log.d(TAG,"onActivityResult RECORD_VIDEO_REQUEST");
-                    if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                    if (TextUtils.isEmpty(CameraFunctionUtil.fileFullName)) {
                         ToastUtil.makeText(mContext, "录像失败了");
                     } else {
-                        ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunction.fileFullName);
+                        ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunctionUtil.fileFullName);
                         // TODO: 扫描新生成的文件到媒体库
-                        MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                        MediaScannerConnection.scanFile(this, new String[] { CameraFunctionUtil.fileFullName },
                                 null, new MediaScannerConnection.OnScanCompletedListener() {
                                     public void onScanCompleted(String path, Uri uri) {
                                         Log.i(TAG, "Scanned " + path + ":");
@@ -529,7 +529,7 @@ public class WebViewActivity extends AppCompatActivity {
             }
         } else {
             // TODO: 清理全局变量文件路径
-            CameraFunction.fileFullName = null;
+            CameraFunctionUtil.fileFullName = null;
             Log.d(TAG,"resultCode is not OK");
         }
 
@@ -545,12 +545,12 @@ public class WebViewActivity extends AppCompatActivity {
             //照相并选择该文件
             case TAKE_PHOTO_AND_UPLOAD_REQUEST:
                 Log.d(TAG,"onActivityResult TAKE_PHOTO_AND_UPLOAD_REQUEST ");
-                if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                if (TextUtils.isEmpty(CameraFunctionUtil.fileFullName)) {
                     ToastUtil.makeText(mContext, "拍照失败了");
                 } else {
-                    ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunction.fileFullName);
+                    ToastUtil.makeText(mContext, "照片生成路径：" + CameraFunctionUtil.fileFullName);
                     // TODO: 扫描新生成的文件到媒体库
-                    MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                    MediaScannerConnection.scanFile(this, new String[] { CameraFunctionUtil.fileFullName },
                             null, new MediaScannerConnection.OnScanCompletedListener() {
                                 public void onScanCompleted(String path, Uri uri) {
                                     Log.i(TAG, "Scanned " + path + ":");
@@ -559,17 +559,17 @@ public class WebViewActivity extends AppCompatActivity {
                             });
                 }
                 //对 input 标签中设置  拍照路径回调，不论成败
-                setFilePathCallback(null, CameraFunction.fileFullName);
+                setFilePathCallback(null, CameraFunctionUtil.fileFullName);
                 break;
             //录像并选择该文件
             case RECORD_VIDEO_AND_UPLOAD_REQUEST:
                 Log.d(TAG,"onActivityResult RECORD_VIDEO_AND_UPLOAD_REQUEST ");
-                if (TextUtils.isEmpty(CameraFunction.fileFullName)) {
+                if (TextUtils.isEmpty(CameraFunctionUtil.fileFullName)) {
                     ToastUtil.makeText(mContext, "录像失败了");
                 } else {
-                    ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunction.fileFullName);
+                    ToastUtil.makeText(mContext, "录像生成路径：" + CameraFunctionUtil.fileFullName);
                     // TODO: 扫描新生成的文件到媒体库
-                    MediaScannerConnection.scanFile(this, new String[] { CameraFunction.fileFullName },
+                    MediaScannerConnection.scanFile(this, new String[] { CameraFunctionUtil.fileFullName },
                             null, new MediaScannerConnection.OnScanCompletedListener() {
                                 public void onScanCompleted(String path, Uri uri) {
                                     Log.i(TAG, "Scanned " + path + ":");
@@ -578,7 +578,7 @@ public class WebViewActivity extends AppCompatActivity {
                             });
                 }
                 //对 input 标签中设置  拍照路径回调，不论成败
-                setFilePathCallback(null, CameraFunction.fileFullName);
+                setFilePathCallback(null, CameraFunctionUtil.fileFullName);
                 break;
             default:
                 break;
@@ -643,7 +643,7 @@ public class WebViewActivity extends AppCompatActivity {
                 if (null != grantResults && grantResults.length > 0) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                             grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                        Intent it = CameraFunction.takePhoto(mContext);
+                        Intent it = CameraFunctionUtil.takePhoto(mContext);
                         startActivityForResult(it, TAKE_PHOTO_REQUEST);
                         Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_PHOTO permission get succeed");
                     } else {
@@ -659,7 +659,7 @@ public class WebViewActivity extends AppCompatActivity {
                 if (null != grantResults && grantResults.length > 0) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                             grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                        Intent it = CameraFunction.recordVideo(mContext);
+                        Intent it = CameraFunctionUtil.recordVideo(mContext);
                         startActivityForResult(it, RECORD_VIDEO_REQUEST);
                         Log.d(TAG,"PERMISSION_REQUEST_CAMERA_FOR_VIDEO permission get succeed");
                     } else {
