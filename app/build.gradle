@@ -11,7 +11,7 @@ android {
     }
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.hnac.hznet"
+        applicationId "com.grow"
         minSdkVersion 15
         targetSdkVersion 27
         versionCode 1

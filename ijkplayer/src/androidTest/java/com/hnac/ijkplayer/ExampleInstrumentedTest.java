@@ -1,4 +1,4 @@
-package com.hnac.ijkplayer;
+package com.grow.ijkplayer;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.hnac.ijkplayer.test", appContext.getPackageName());
+        assertEquals("com.grow.ijkplayer.test", appContext.getPackageName());
     }
 }

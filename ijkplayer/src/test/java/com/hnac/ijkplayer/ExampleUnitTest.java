@@ -1,4 +1,4 @@
-package com.hnac.ijkplayer;
+package com.grow.ijkplayer;
 
 import org.junit.Test;
 

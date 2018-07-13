@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".ui.LivePlayActivity">
 
-    <com.hnac.ijkplayer.IjkVideoView
+    <com.grow.ijkplayer.IjkVideoView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center">
 
-    </com.hnac.ijkplayer.IjkVideoView>
+    </com.grow.ijkplayer.IjkVideoView>
 
     <SurfaceView
         android:id="@+id/videoinfo_surface"

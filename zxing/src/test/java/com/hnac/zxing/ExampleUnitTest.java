@@ -1,4 +1,4 @@
-package com.hnac.zxing;
+package com.grow.zxing;
 
 import org.junit.Test;
 

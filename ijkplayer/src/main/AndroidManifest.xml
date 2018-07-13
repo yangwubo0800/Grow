@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.hnac.ijkplayer" >
+package="com.grow.ijkplayer" >
 <application>
 <activity android:name=".ui.IjkVideoPlayActivity"></activity>
 <activity android:name=".ui.LivePlayActivity"></activity>
